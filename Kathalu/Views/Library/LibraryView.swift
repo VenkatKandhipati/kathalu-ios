@@ -25,6 +25,7 @@ struct LibraryView: View {
                         stories: model.storyStore.stories,
                         progress: model.data.storyProgress,
                         onSelect: { selectedStory = $0 })
+                        .padding(.horizontal, -22)  // full-bleed shelf; inset restored inside
                 }
                 .padding(.horizontal, 22)
                 .padding(.bottom, 24)
@@ -180,37 +181,73 @@ struct TodayStoryCard: View {
     }
 }
 
-/// The wooden bookshelf of story spines.
+/// The wooden bookshelf of story spines, with a staggered pop-in and a
+/// press-to-lift interaction. Books and plank scroll together as one shelf.
 struct BookshelfView: View {
     let stories: [Story]
     let progress: [Int: StoryProgressEntry]
     let onSelect: (Story) -> Void
 
-    private let spineHeights: [CGFloat] = [148, 168, 158, 172, 150, 164]
+    private let spineHeights: [CGFloat] = [150, 172, 158, 176, 152, 166]
+    private let sideInset: CGFloat = 22
+    @State private var appeared = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .bottom, spacing: 11) {
-                    ForEach(stories) { story in
-                        BookSpineView(
-                            story: story,
-                            height: spineHeights[story.index % spineHeights.count],
-                            bestPct: progress[story.index]?.bestPct)
-                        .onTapGesture { onSelect(story) }
+        ScrollView(.horizontal, showsIndicators: false) {
+            VStack(spacing: 0) {
+                HStack(alignment: .bottom, spacing: 10) {
+                    ForEach(Array(stories.enumerated()), id: \.element.id) { idx, story in
+                        Button {
+                            onSelect(story)
+                        } label: {
+                            BookSpineView(
+                                story: story,
+                                height: spineHeights[story.index % spineHeights.count],
+                                bestPct: progress[story.index]?.bestPct)
+                        }
+                        .buttonStyle(BookSpineButtonStyle())
+                        .scaleEffect(appeared ? 1 : 0.72, anchor: .bottom)
+                        .opacity(appeared ? 1 : 0)
+                        .animation(
+                            .spring(response: 0.55, dampingFraction: 0.7)
+                                .delay(Double(idx) * 0.07),
+                            value: appeared)
                     }
                 }
-                .padding(.horizontal, 4)
-                .frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, sideInset)
+                .padding(.top, 16)
+
+                shelfPlank
             }
-            // Wooden shelf plank.
-            LinearGradient(
-                colors: [Color(red: 0.71, green: 0.57, blue: 0.35), Color(red: 0.53, green: 0.41, blue: 0.24)],
-                startPoint: .top, endPoint: .bottom)
-                .frame(height: 13)
-                .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 4, bottomTrailingRadius: 4))
-                .shadow(color: .black.opacity(0.3), radius: 5, y: 5)
         }
+        .onAppear { appeared = true }
+    }
+
+    /// Wooden shelf plank with a lit top edge and a soft cast shadow.
+    private var shelfPlank: some View {
+        LinearGradient(
+            colors: [Color(red: 0.74, green: 0.60, blue: 0.39),
+                     Color(red: 0.53, green: 0.40, blue: 0.20)],
+            startPoint: .top, endPoint: .bottom)
+            .frame(height: 14)
+            .overlay(alignment: .top) {
+                LinearGradient(colors: [.white.opacity(0.35), .clear],
+                               startPoint: .top, endPoint: .bottom)
+                    .frame(height: 3)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 3))
+            .shadow(color: .black.opacity(0.28), radius: 7, y: 6)
+            .padding(.horizontal, sideInset - 10)
+    }
+}
+
+/// Lifts a book off the shelf when pressed, like pulling it out to open.
+struct BookSpineButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1, anchor: .bottom)
+            .offset(y: configuration.isPressed ? -9 : 0)
+            .animation(.spring(response: 0.32, dampingFraction: 0.62), value: configuration.isPressed)
     }
 }
 
@@ -219,32 +256,61 @@ struct BookSpineView: View {
     let height: CGFloat
     let bestPct: Int?
 
+    private let width: CGFloat = 48
+
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            // Spine body: colored gradient with a binding highlight and edge shading.
+            Theme.spineGradient(for: story.index)
+                .overlay(alignment: .leading) {
+                    LinearGradient(colors: [.white.opacity(0.22), .clear],
+                                   startPoint: .leading, endPoint: .trailing)
+                        .frame(width: 7)
+                }
+                .overlay(alignment: .trailing) {
+                    LinearGradient(colors: [.clear, .black.opacity(0.20)],
+                                   startPoint: .leading, endPoint: .trailing)
+                        .frame(width: 9)
+                }
+                .overlay(alignment: .top) {
+                    Rectangle().fill(.white.opacity(0.16)).frame(height: 2)
+                }
+
+            // Rotated title: length constrained to the spine so it never overflows.
             Text(story.titleEn)
-                .font(Theme.latinSerif(11, weight: .semibold))
+                .font(Theme.latinSerif(11.5, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.97))
                 .lineLimit(2)
-                .rotationEffect(.degrees(90))
-                .fixedSize()
-                .frame(maxHeight: .infinity)
-            Text("✦")
-                .font(.system(size: 10))
-                .opacity(0.5)
-                .padding(.bottom, 12)
-        }
-        .foregroundStyle(.white.opacity(0.9))
-        .frame(width: 44, height: height)
-        .background(Theme.spineGradient(for: story.index))
-        .clipShape(UnevenRoundedRectangle(
-            topLeadingRadius: 3, bottomLeadingRadius: 3,
-            bottomTrailingRadius: 6, topTrailingRadius: 6))
-        .shadow(color: .black.opacity(0.24), radius: 4, x: 2, y: 3)
-        .overlay(alignment: .bottomTrailing) {
-            if let pct = bestPct {
-                ProficiencyRing(pct: pct, size: 20, lineWidth: 3)
-                    .background(Circle().fill(Theme.card).padding(-2))
-                    .offset(x: 5, y: 5)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.6)
+                .frame(width: height - 50, height: width - 8)
+                .rotationEffect(.degrees(-90))
+                .offset(y: -14)
+
+            // Bottom emblem: reading-progress ring, or a small flourish.
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                emblem.padding(.bottom, 11)
             }
+        }
+        .frame(width: width, height: height)
+        .clipShape(UnevenRoundedRectangle(
+            topLeadingRadius: 4, bottomLeadingRadius: 4,
+            bottomTrailingRadius: 7, topTrailingRadius: 7))
+        .shadow(color: .black.opacity(0.24), radius: 5, x: 2, y: 4)
+    }
+
+    @ViewBuilder
+    private var emblem: some View {
+        if let pct = bestPct {
+            ProficiencyRing(pct: pct, size: 22, lineWidth: 3)
+                .padding(4)
+                .background(Circle().fill(.black.opacity(0.22)))
+        } else {
+            Image(systemName: "sparkle")
+                .font(.system(size: 10))
+                .foregroundStyle(.white.opacity(0.5))
+                .padding(.bottom, 2)
         }
     }
 }
