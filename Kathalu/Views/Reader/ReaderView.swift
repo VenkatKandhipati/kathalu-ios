@@ -13,6 +13,10 @@ struct ReaderView: View {
     @State private var tappedWords: Set<String> = []
     @State private var sheetWord: WordSheetItem?
     @State private var didFinish = false
+    /// 0…1 reading progress for the continuous scroll reader.
+    @State private var scrollProgress: CGFloat = 0
+    /// All story paragraphs tokenized once, for the scroll reader.
+    @State private var scrollParagraphs: [[ReaderPage.Token]] = []
 
     private var pages: [ReaderPage] {
         ReaderPage.paginate(story: story, fontSize: model.fontSize.points)
@@ -22,14 +26,24 @@ struct ReaderView: View {
         VStack(spacing: 0) {
             navBar
             progressBar
-            pager
-            bottomBar
+            reader
+            if model.readingMode == .paged {
+                bottomBar
+            }
         }
         .background(Theme.pageBackground.ignoresSafeArea())
         .sheet(item: $sheetWord) { item in
             WordSheetView(word: item.word, story: story)
                 .presentationDetents([.height(400)])
                 .presentationDragIndicator(.visible)
+        }
+    }
+
+    @ViewBuilder
+    private var reader: some View {
+        switch model.readingMode {
+        case .paged: pagedReader
+        case .scroll: scrollReader
         }
     }
 
@@ -59,6 +73,14 @@ struct ReaderView: View {
 
     private var fontSizeMenu: some View {
         Menu {
+            Picker("Reading mode", selection: Binding(
+                get: { model.readingMode },
+                set: { model.readingMode = $0 })) {
+                ForEach(AppModel.ReadingMode.allCases) { mode in
+                    Label(mode.label, systemImage: mode.systemImage).tag(mode)
+                }
+            }
+            Divider()
             Picker("Reading font size", selection: Binding(
                 get: { model.fontSize },
                 set: { model.fontSize = $0 })) {
@@ -79,14 +101,74 @@ struct ReaderView: View {
         GeometryReader { geo in
             Rectangle()
                 .fill(Theme.accent)
-                .frame(width: geo.size.width * CGFloat(pageIndex + 1) / CGFloat(max(1, pages.count)))
-                .animation(.snappy, value: pageIndex)
+                .frame(width: geo.size.width * progressFraction)
+                .animation(.snappy, value: progressFraction)
         }
         .frame(height: 2)
         .background(Theme.divider)
     }
 
-    private var pager: some View {
+    /// Filled portion of the progress bar for the current reading mode.
+    private var progressFraction: CGFloat {
+        switch model.readingMode {
+        case .paged: return CGFloat(pageIndex + 1) / CGFloat(max(1, pages.count))
+        case .scroll: return scrollProgress
+        }
+    }
+
+    /// Continuous, infinite-scroll reader (the default).
+    private var scrollReader: some View {
+        GeometryReader { outer in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 26) {
+                    titleBlock
+                    ForEach(Array(scrollParagraphs.enumerated()), id: \.offset) { _, tokens in
+                        paragraphView(tokens)
+                    }
+                }
+                .padding(.horizontal, 30)
+                .padding(.top, 26)
+                .padding(.bottom, 40)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    GeometryReader { content in
+                        Color.clear.preference(
+                            key: ScrollMetricsKey.self,
+                            value: ScrollMetrics(
+                                offset: content.frame(in: .named(Self.scrollSpace)).minY,
+                                contentHeight: content.size.height))
+                    })
+            }
+            .coordinateSpace(name: Self.scrollSpace)
+            .onPreferenceChange(ScrollMetricsKey.self) { metrics in
+                updateScrollProgress(metrics, viewportHeight: outer.size.height)
+            }
+        }
+        .onAppear {
+            if scrollParagraphs.isEmpty {
+                scrollParagraphs = ReaderPage.allParagraphs(story: story)
+            }
+        }
+    }
+
+    private static let scrollSpace = "readerScroll"
+
+    /// Derives reading progress from scroll offset; finishes the story once the
+    /// bottom is reached (or immediately if the whole story fits on screen).
+    private func updateScrollProgress(_ metrics: ScrollMetrics, viewportHeight: CGFloat) {
+        guard metrics.contentHeight > 0 else { return }
+        let scrollable = metrics.contentHeight - viewportHeight
+        if scrollable <= 1 {
+            scrollProgress = 1
+            finishIfNeeded()
+            return
+        }
+        let progress = min(1, max(0, -metrics.offset / scrollable))
+        scrollProgress = progress
+        if progress >= 0.99 { finishIfNeeded() }
+    }
+
+    private var pagedReader: some View {
         TabView(selection: $pageIndex) {
             ForEach(pages) { page in
                 ScrollView {
@@ -208,6 +290,19 @@ struct WordSheetItem: Identifiable {
     var id: String { word }
 }
 
+/// Scroll offset + total content height, used to compute reading progress.
+private struct ScrollMetrics: Equatable {
+    var offset: CGFloat
+    var contentHeight: CGFloat
+}
+
+private struct ScrollMetricsKey: PreferenceKey {
+    static let defaultValue = ScrollMetrics(offset: 0, contentHeight: 0)
+    static func reduce(value: inout ScrollMetrics, nextValue: () -> ScrollMetrics) {
+        value = nextValue()
+    }
+}
+
 /// One tappable chunk of story text (a Telugu word plus any attached punctuation).
 struct WordTokenView: View {
     enum RevealState {
@@ -300,6 +395,15 @@ struct ReaderPage: Identifiable {
                 paragraphs: paragraphs.enumerated().map { paraIdx, text in
                     tokenize(text, pageIdx: pageIdx, paraIdx: paraIdx)
                 })
+        }
+    }
+
+    /// Tokenizes every paragraph of a story into one flat list, for the
+    /// continuous scroll reader (no pagination). Ids stay globally unique
+    /// because the paragraph index spans the whole story.
+    static func allParagraphs(story: Story) -> [[Token]] {
+        story.paragraphs.enumerated().map { paraIdx, text in
+            tokenize(text, pageIdx: 0, paraIdx: paraIdx)
         }
     }
 

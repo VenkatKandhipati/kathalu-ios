@@ -38,11 +38,33 @@ final class AppModel {
         }
     }
 
+    /// How the reader advances through a story: one continuous scroll (default)
+    /// or discrete swipe-to-flip pages.
+    enum ReadingMode: String, CaseIterable, Identifiable {
+        case scroll, paged
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .scroll: return "Scroll"
+            case .paged: return "Pages"
+            }
+        }
+        var systemImage: String {
+            switch self {
+            case .scroll: return "arrow.up.arrow.down"
+            case .paged: return "book"
+            }
+        }
+    }
+
     var appearance: Appearance {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: "appearance") }
     }
     var fontSize: ReadingFontSize {
         didSet { UserDefaults.standard.set(fontSize.rawValue, forKey: "storyFontSize") }
+    }
+    var readingMode: ReadingMode {
+        didSet { UserDefaults.standard.set(readingMode.rawValue, forKey: "readingMode") }
     }
     var hasSeenOnboarding: Bool {
         didSet { UserDefaults.standard.set(hasSeenOnboarding, forKey: "hasSeenOnboarding") }
@@ -64,6 +86,7 @@ final class AppModel {
         data = localStore.load()
         appearance = Appearance(rawValue: UserDefaults.standard.string(forKey: "appearance") ?? "") ?? .system
         fontSize = ReadingFontSize(rawValue: UserDefaults.standard.string(forKey: "storyFontSize") ?? "") ?? .medium
+        readingMode = ReadingMode(rawValue: UserDefaults.standard.string(forKey: "readingMode") ?? "") ?? .scroll
         hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
         let apiClient = APIClient(auth: auth)
         api = apiClient
