@@ -27,12 +27,55 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 **Approach notes**
 - Better source data than MyMemory for the curation pass: Charles Philip Brown Telugu–English dictionary, Andhra Bharati, or Wiktionary dumps — richer and license-checkable.
 - Validate/clean any machine output (strip provider warnings, drop glosses equal to the input, lowercase consistently).
-- Model `senses` as a list from day one so a word can carry multiple meanings (needed for feature #5).
+- Model `senses` as a list from day one so a word can carry multiple meanings (needed for feature #6).
 
 **Effort: L.** Phase it: (a) `WordEntry` model + local bundled lookup + fallback rewrite (M); (b) generate & curate the story-vocabulary seed (M, mostly data work); (c) backend table + community submit/moderate loop (M–L, optional follow-on).
 **Files:** new `Models/WordEntry.swift`, `Resources/dictionary.json`, `Services/DictionaryService.swift` (replaces/absorbs `TranslationService`), `WordSheetView`, `APIClient`/`SyncEngine` for the DB layer.
 
-### 2. Resume reading position (per-story bookmark)
+### 2. Aksharamala — learn the Telugu script (vowels, consonants, guninthalu, vatthulu)
+**Priority: high. Effort: XL — a whole new learning pillar.** Kathalu today assumes you can already read the script; it teaches *vocabulary in context*. A dedicated **Learn** section that teaches the writing system from the ground up opens the app to true beginners and gives existing readers a way to shore up gaps — especially guninthalu and vatthulu, which trip up most learners.
+
+**The script, and what we'd cover**
+- **Vowels — అచ్చులు (achchulu):** the ~16 independent vowels (అ ఆ ఇ ఈ ఉ ఊ ఋ ఎ ఏ ఐ ఒ ఓ ఔ …), plus anusvara / visarga (ం ః).
+- **Consonants — హల్లులు (hallulu):** the ~36 base consonants (క ఖ గ ఘ ఙ … హ ళ క్ష ఱ).
+- **Vowel signs — గుణింతాలు (guninthalu):** every consonant × vowel-sign (mātra) combination — the big క కా కి కీ కు కూ … grid. This is where reading fluency is actually won.
+- **Compound consonants — వత్తులు (vatthulu):** subscript / conjunct forms (ottakshara) like క్క, స్త, ల్ల — the hardest and most-skipped part of learning the script.
+
+**A new "Learn" tab / section**
+- Add a 5th tab (**Learn · అక్షరాలు**) alongside Library / Review / Progress / Profile.
+- **Reference charts:** browsable, sectioned grids for vowels, consonants, guninthalu, and vatthulu. Tap any akshara to hear it (SpeechService), see its transliteration + name, and an example word that uses it — real examples can be pulled from the story corpus via `TeluguText`.
+- **Quiz / flashcard drills:** reuse the SM-2 engine and the deck-stack UI from Review, but as **separate script decks** so alphabet practice never mixes with vocabulary. Modes:
+  - *Recognition:* see the akshara → recall its sound / name.
+  - *Listening:* hear it (audio) → pick the right akshara.
+  - *Production (later):* trace / handwrite, or type the transliteration.
+- **Guninthalu drills:** given a consonant + a target vowel, pick or produce the correct combined form; reinforces mātra application.
+- **Vatthulu drills:** recognize and assemble conjuncts.
+
+**Future: gamified lessons**
+- A structured **learn path** — ordered units (vowels → consonants → guninthalu → vatthulu), each a short lesson plus a mastery check that unlocks the next.
+- Per-akshara mastery tracking (SM-2 gives this for free), XP, and a tie-in to the existing streak so script practice also feeds the daily loop.
+- Optional "placement" so existing readers can skip ahead.
+
+**Heavy reuse — why the effort is leveraged, not from-scratch**
+- **`Transliterator`** already encodes the vowel / consonant / mātra / virama maps — essentially the seed data for the reference charts and the answer key for quizzes.
+- **`SpeechService`** already pronounces Telugu — point it at single aksharas.
+- **`SM2`** + **`ReviewView` / `DeckStackView`** give scheduling and a proven flashcard UI to fork.
+- **Theme + bundled Noto Telugu fonts** already render the script beautifully.
+
+**Data model**
+- New `Akshara` model: `character`, `category` (vowel / consonant / guninthaa / vatthu), `transliteration`, `name`, `order`, optional `exampleWord`.
+- Seed a bundled `Resources/aksharas.json` (partly generatable from `Transliterator`'s maps); mastery / scheduling state lives in `UserData` under its own keyspace so it syncs through the existing engine.
+
+**Effort: XL — phase it**
+1. **Reference charts** for vowels + consonants, tap-to-hear (M).
+2. **Flashcard decks** for vowels + consonants over SM-2, separate from vocab (M).
+3. **Guninthalu** reference + drills (M–L).
+4. **Vatthulu** reference + drills (M–L).
+5. **Gamified lesson path** + mastery / progression + streak tie-in (L–XL).
+
+**Files:** new `Views/Learn/`, `Models/Akshara.swift`, `Resources/aksharas.json`, extend `UserData` / `AppModel` for script mastery, reuse `Transliterator` / `SpeechService` / `SM2` / `DeckStackView`, add a tab in `RootView`.
+
+### 3. Resume reading position (per-story bookmark)
 **Priority: high, low cost.** Reopening a story always restarts at the top — punishing for longer reads spread across sessions.
 
 **What to build**
@@ -46,7 +89,7 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 
 **Effort: S–M.** **Files:** `Models/VocabCard.swift` (`StoryProgressEntry`), `ReaderView`, `AppModel`.
 
-### 3. Daily reminders & reading goal (local notifications)
+### 4. Daily reminders & reading goal (local notifications)
 **Priority: high — retention.** Streaks are the core loop but nothing brings the user back. A daily local notification is high-leverage and works fully offline.
 
 **What to build**
@@ -61,7 +104,7 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 
 **Effort: M.** **Files:** new `Services/NotificationService.swift`, `ProfileView`, `AppModel`.
 
-### 4. TTS voice & speed customization
+### 5. TTS voice & speed customization
 **Priority: medium, low cost.** `SpeechService` hardcodes `te-IN` at rate `0.42`. Learners vary; slower pronunciation is a common ask. Natural complement to the new sound toggle.
 
 **What to build**
@@ -70,11 +113,11 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 - A "test" button that speaks a sample word at the chosen settings.
 
 **Approach notes**
-- Do the `AVAudioSession` configuration from bug #2 here too (silent-mode playback, ducking, missing-voice handling) — this feature and that fix overlap heavily.
+- The `AVAudioSession` groundwork (silent-mode playback, ducking, missing-voice fallback) is already done — see the fixed bug in Part 2. This feature is now purely about exposing rate/voice as persisted user settings.
 
 **Effort: S.** **Files:** `SpeechService`, `AppModel`, `ReaderView` / `ProfileView`.
 
-### 5. Richer word detail (senses, example sentences, occurrences)
+### 6. Richer word detail (senses, example sentences, occurrences)
 **Priority: medium. Builds on #1.** The word sheet shows pronunciation + a single gloss. Context and multiple senses drive retention.
 
 **What to build**
@@ -83,11 +126,11 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 - Optional: root/inflection hint and a "more examples" expander.
 
 **Approach notes**
-- Depends on #1's `senses` list and on tokenization that preserves sentence boundaries — worth adding a sentence-level split to `ReaderPage`/`Story` so both the tap sheet and read-aloud (#9) can reuse it.
+- Depends on #1's `senses` list and on tokenization that preserves sentence boundaries — worth adding a sentence-level split to `ReaderPage`/`Story` so both the tap sheet and read-aloud (#10) can reuse it.
 
 **Effort: M.** **Files:** `WordSheetView`, `Story` / `ReaderPage` (sentence tokenization), `WordEntry`.
 
-### 6. Home screen widgets (story of the day + streak)
+### 7. Home screen widgets (story of the day + streak)
 **Priority: medium — retention/marketing.** `StoryStore.today` and `data.streak` already exist; a WidgetKit extension surfacing them is strong, low-data-risk value.
 
 **What to build**
@@ -100,12 +143,12 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 
 **Effort: L (mostly target/App-Group setup).** **Files:** new Widget extension target, shared model via App Group, small refactor so `StoryStore`/`UserData` are reachable from the extension.
 
-### 7. Review modes & smarter scheduling
+### 8. Review modes & smarter scheduling
 **Priority: medium.** Review is reveal-then-rate only. More modes deepen practice; the SM-2 engine is already solid and server-matched.
 
 **What to build**
 - **Typing/recall** mode (type the meaning or transliteration), **audio-only** cards (hear → recall), **leech detection** + suspend, and a per-session cap/goal.
-- Card editing/suspend ties into the deck-management screen (#8).
+- Card editing/suspend ties into the deck-management screen (#9).
 
 **Approach notes**
 - Keep scheduling in `SM2` untouched for parity with the backend; add mode/leech state around it.
@@ -116,18 +159,18 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 
 ### The rest (lower priority)
 
-### 8. Vocabulary browser & deck management
+### 9. Vocabulary browser & deck management
 **Why:** You can *add* cards (`addToDeck`) but there's no screen to see, search, edit, or **delete** them — the deck only appears during a review session, and it grows unbounded. Also the natural home for the "correct this meaning" action feeding #1's community loop.
 **What:** A searchable "Words" screen over `deckCards`, grouped by story/due state, with swipe-to-delete, edit-meaning, and re-listen. Add `removeCard` to `AppModel` + a sync delete.
 **Effort: M.** **Files:** new `Views/Deck/`, `AppModel`, `APIClient`/`SyncEngine` (delete endpoint).
 _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue independent of the full screen._
 
-### 9. Full read-aloud mode (sentence & paragraph TTS)
+### 10. Full read-aloud mode (sentence & paragraph TTS)
 **Why:** We already speak single words; continuous narration with highlighting is a natural fit for a reading app and great listening practice.
 **What:** Extend `SpeechService` with sentence/paragraph playback + `AVSpeechSynthesizerDelegate.willSpeakRangeOfSpeechString` to highlight the active word; play/pause in the reader chrome.
-**Effort: M–L.** **Files:** `SpeechService`, `ReaderView`. Shares the sentence-tokenization work from #5 and the audio-session fix from #4/bug #2.
+**Effort: M–L.** **Files:** `SpeechService`, `ReaderView`. Shares the sentence-tokenization work from #6 and the audio-session fix (already done — see bug #2 in Part 2).
 
-### 10. Library search, filtering & difficulty levels
+### 11. Library search, filtering & difficulty levels
 **Why:** The bookshelf is a flat horizontal scroll; it won't scale and gives no way to pick stories by level.
 **What:** Search by title/collection; group/filter by collection; add a `difficulty`/`level` field to `Story` + `stories.json`, with a filter and a level chip on spines.
 **Effort: M.** **Files:** `Story`, `stories.json`, `LibraryView`.
@@ -139,7 +182,7 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 ### High
 - **Sync status indicator is effectively frozen.** `AppModel.syncStatus` reads `sync.status`, but `SyncEngine` is a plain `final class` (not `@Observable`), so Observation doesn't track it — ProfileView's "Syncing… / Synced / Offline" pill never updates after first render. `SyncEngine.status` is also mutated from background `Task`s while read on the main actor (data race). Fix: route status through the `@MainActor @Observable` `AppModel`, updated on the main actor.
 
-- **`SpeechService` audio session is unconfigured.** No `AVAudioSession` category is set, so pronunciation may not play in silent mode, won't duck other audio, and there's no fallback/signal when the `te-IN` voice is missing (silent failure). Configure `.playback`/`.ambient` and handle a nil Telugu voice. _(Overlaps with feature #4 — do together.)_
+- **~~`SpeechService` audio session is unconfigured.~~ ✅ Fixed.** Now sets the `.playback` category (`.spokenAudio` mode, `.duckOthers`) so pronunciation plays through the silent switch and ducks background audio, and falls back to the system default voice when `te-IN` isn't installed. _Remaining follow-on for feature #5: expose rate/voice as user settings._
 
 ### Medium
 - **Reading completion auto-fires and inflates stats.** `finishIfNeeded()` runs when a story fits on screen or on reaching the last page / 99% scroll, regardless of real reading — marking a reading day (streak++), incrementing `storiesRead`, and recording proficiency. Short stories can grant a streak on open. Gate on real dwell time (the new reading-timer accumulator is a natural signal) and/or scroll depth.
@@ -150,7 +193,7 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 
 - **`TranslationService` returns unvalidated MyMemory output.** It lowercases and passes through whatever comes back — including provider warnings, quota messages, or an echo of the input — and `WordSheetView` always says "unavailable offline" even on an online failure. _(Subsumed by feature #1, but worth a quick guard sooner.)_
 
-- **No way to delete saved cards.** `data.cards` only grows; a bad add or bad auto-gloss is permanent. Tracked as feature #8, but it's a correctness/data-hygiene gap on its own.
+- **No way to delete saved cards.** `data.cards` only grows; a bad add or bad auto-gloss is permanent. Tracked as feature #9, but it's a correctness/data-hygiene gap on its own.
 
 ### Low / cleanup
 - **Duplicate lookup counters.** `data.wordTaps[word]` and `VocabCard.lookups` both count look-ups; `mostLookedUp` uses `wordTaps` and `card.lookups` is essentially unused. Pick one.

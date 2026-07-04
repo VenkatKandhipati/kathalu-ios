@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXFileReference section */
+		KA0000000000000000000005 /* Kathalu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kathalu.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		KA0000000000000000000001 /* Kathalu */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -120,16 +124,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXFileReference section */
-		KA0000000000000000000005 /* Kathalu.app */ = {
-			isa = PBXFileReference;
-			explicitFileType = wrapper.application;
-			includeInIndex = 0;
-			path = Kathalu.app;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXFileReference section */
-
 /* Begin XCBuildConfiguration section */
 		KA000000000000000000000C /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -189,6 +183,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 53BG7N67EJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Config/Info.plist;
@@ -210,6 +205,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 53BG7N67EJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Config/Info.plist;
@@ -229,20 +225,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		KA000000000000000000000B /* Build configuration list for PBXProject "Kathalu" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				KA000000000000000000000C /* Debug */,
-				KA000000000000000000000D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		KA0000000000000000000007 /* Build configuration list for PBXNativeTarget "Kathalu" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				KA000000000000000000000E /* Debug */,
 				KA000000000000000000000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		KA000000000000000000000B /* Build configuration list for PBXProject "Kathalu" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				KA000000000000000000000C /* Debug */,
+				KA000000000000000000000D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
