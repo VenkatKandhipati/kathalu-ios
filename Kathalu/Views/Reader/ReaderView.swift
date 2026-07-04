@@ -5,6 +5,7 @@ import SwiftUI
 struct ReaderView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     let story: Story
 
@@ -17,6 +18,12 @@ struct ReaderView: View {
     @State private var scrollProgress: CGFloat = 0
     /// All story paragraphs tokenized once, for the scroll reader.
     @State private var scrollParagraphs: [[ReaderPage.Token]] = []
+    /// One-time coach hint letting readers know the sound toggle lives in "Aa".
+    @State private var showSoundTip = false
+    /// Reading time banked from completed (active) segments this session.
+    @State private var timerAccumulated: TimeInterval = 0
+    /// Start of the current active segment; nil while paused (backgrounded).
+    @State private var timerSegmentStart: Date?
 
     private var pages: [ReaderPage] {
         ReaderPage.paginate(story: story, fontSize: model.fontSize.points)
@@ -32,11 +39,99 @@ struct ReaderView: View {
             }
         }
         .background(Theme.pageBackground.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            if showSoundTip { soundTip }
+        }
         .sheet(item: $sheetWord) { item in
             WordSheetView(word: item.word, story: story)
                 .presentationDetents([.height(400)])
                 .presentationDragIndicator(.visible)
         }
+        .onAppear {
+            resumeTimer()
+            guard !model.hasSeenSoundTip else { return }
+            withAnimation(.spring(response: 0.4).delay(0.6)) { showSoundTip = true }
+        }
+        .onDisappear { pauseTimer() }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active { resumeTimer() } else { pauseTimer() }
+        }
+    }
+
+    // MARK: Reading timer
+
+    /// Seconds spent actively reading this session (paused while backgrounded).
+    private var timerElapsed: TimeInterval {
+        timerAccumulated + (timerSegmentStart.map { Date().timeIntervalSince($0) } ?? 0)
+    }
+
+    private func resumeTimer() {
+        guard timerSegmentStart == nil else { return }
+        timerSegmentStart = Date()
+    }
+
+    private func pauseTimer() {
+        guard let start = timerSegmentStart else { return }
+        timerAccumulated += Date().timeIntervalSince(start)
+        timerSegmentStart = nil
+    }
+
+    /// A muted, ticking stopwatch label — `m:ss`, rolling to `h:mm:ss` past an hour.
+    private var readingTimer: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { _ in
+            Text(formatted(timerElapsed))
+                .font(Theme.latinSerif(12))
+                .monospacedDigit()
+                .foregroundStyle(Theme.textTertiary)
+        }
+    }
+
+    private func formatted(_ interval: TimeInterval) -> String {
+        let total = Int(interval)
+        let h = total / 3600, m = (total % 3600) / 60, s = total % 60
+        return h > 0
+            ? String(format: "%d:%02d:%02d", h, m, s)
+            : String(format: "%d:%02d", m, s)
+    }
+
+    /// A one-time callout under the "Aa" button explaining the sound toggle.
+    /// Tapping it (or the auto-dismiss timer) marks it as seen.
+    private var soundTip: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "speaker.wave.2.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Word sound is on")
+                    .font(Theme.latinSerif(13, weight: .semibold))
+                    .foregroundStyle(Theme.textHeading)
+                Text("Tap **Aa** to turn it off or on.")
+                    .font(Theme.latinSerif(12))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Theme.card)
+                .shadow(color: .black.opacity(0.15), radius: 10, y: 4))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.cardBorder))
+        .frame(maxWidth: 230, alignment: .leading)
+        .padding(.trailing, 12)
+        .padding(.top, 4)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .onTapGesture { dismissSoundTip() }
+        .task {
+            try? await Task.sleep(for: .seconds(5))
+            dismissSoundTip()
+        }
+    }
+
+    private func dismissSoundTip() {
+        guard showSoundTip else { return }
+        model.hasSeenSoundTip = true
+        withAnimation(.easeOut(duration: 0.25)) { showSoundTip = false }
     }
 
     @ViewBuilder
@@ -59,6 +154,9 @@ struct ReaderView: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                     .frame(width: 34, height: 34)
+            }
+            if model.showReadingTimer {
+                readingTimer
             }
             Spacer()
             Text(story.title)
@@ -87,6 +185,17 @@ struct ReaderView: View {
                 ForEach(AppModel.ReadingFontSize.allCases) { size in
                     Text(size.label).tag(size)
                 }
+            }
+            Divider()
+            Toggle(isOn: Binding(
+                get: { model.soundEnabled },
+                set: { model.soundEnabled = $0 })) {
+                Label("Pronounce words aloud", systemImage: "speaker.wave.2.fill")
+            }
+            Toggle(isOn: Binding(
+                get: { model.showReadingTimer },
+                set: { model.showReadingTimer = $0 })) {
+                Label("Show reading timer", systemImage: "stopwatch")
             }
         } label: {
             Text("Aa")
@@ -272,7 +381,7 @@ struct ReaderView: View {
             revealedTokens.insert(token.id)
             tappedWords.insert(word)
             model.recordLookup(word: word, storyIdx: story.index)
-            model.speech.speak(word)
+            if model.soundEnabled { model.speech.speak(word) }
         }
     }
 

@@ -66,8 +66,21 @@ final class AppModel {
     var readingMode: ReadingMode {
         didSet { UserDefaults.standard.set(readingMode.rawValue, forKey: "readingMode") }
     }
+    /// Whether tapping a word plays its pronunciation aloud. On by default.
+    var soundEnabled: Bool {
+        didSet { UserDefaults.standard.set(soundEnabled, forKey: "soundEnabled") }
+    }
+    /// Whether the reader shows a minimal stopwatch of the current session's
+    /// reading time. On by default; kept minimal so it doesn't intrude.
+    var showReadingTimer: Bool {
+        didSet { UserDefaults.standard.set(showReadingTimer, forKey: "showReadingTimer") }
+    }
     var hasSeenOnboarding: Bool {
         didSet { UserDefaults.standard.set(hasSeenOnboarding, forKey: "hasSeenOnboarding") }
+    }
+    /// Whether the reader has shown the one-time "tap Aa to toggle sound" hint.
+    var hasSeenSoundTip: Bool {
+        didSet { UserDefaults.standard.set(hasSeenSoundTip, forKey: "hasSeenSoundTip") }
     }
 
     // MARK: Services
@@ -87,7 +100,10 @@ final class AppModel {
         appearance = Appearance(rawValue: UserDefaults.standard.string(forKey: "appearance") ?? "") ?? .system
         fontSize = ReadingFontSize(rawValue: UserDefaults.standard.string(forKey: "storyFontSize") ?? "") ?? .medium
         readingMode = ReadingMode(rawValue: UserDefaults.standard.string(forKey: "readingMode") ?? "") ?? .scroll
+        soundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
+        showReadingTimer = UserDefaults.standard.object(forKey: "showReadingTimer") as? Bool ?? true
         hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
+        hasSeenSoundTip = UserDefaults.standard.bool(forKey: "hasSeenSoundTip")
         let apiClient = APIClient(auth: auth)
         api = apiClient
         sync = SyncEngine(api: apiClient)
