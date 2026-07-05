@@ -44,6 +44,11 @@ struct GuninthaluView: View {
         .background(Theme.background)
         .navigationTitle("Guninthalu")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                SoundToggleButton()
+            }
+        }
         // Same stable-identity pattern as LearnView: a boolean presentation
         // keeps the compact detent while hopping between forms.
         .sheet(isPresented: $showingDetail, onDismiss: { selectedSign = nil }) {
@@ -109,7 +114,7 @@ struct GuninthaluView: View {
                 Button {
                     selectedSign = sign
                     showingDetail = true
-                    model.speech.speak(sign.apply(to: consonant))
+                    if model.soundEnabled { model.speech.speak(sign.apply(to: consonant)) }
                 } label: {
                     AksharaTile(
                         akshara: Akshara(

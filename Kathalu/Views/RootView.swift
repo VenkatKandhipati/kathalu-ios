@@ -4,11 +4,25 @@ struct RootView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        if model.hasSeenOnboarding {
-            MainTabView()
-        } else {
-            OnboardingView()
+        Group {
+            if model.hasSeenOnboarding {
+                MainTabView()
+            } else {
+                OnboardingView()
+            }
         }
+        #if DEBUG
+        // Debug hook: `simctl launch … -ttsStress 1` speaks continuously so
+        // AVSpeechSynthesizer memory behavior can be profiled hands-free.
+        .task {
+            guard UserDefaults.standard.bool(forKey: "ttsStress") else { return }
+            let letters = AksharaData.consonants.map(\.letter)
+            for i in 0..<10_000 {
+                model.speech.speak(letters[i % letters.count])
+                try? await Task.sleep(for: .milliseconds(800))
+            }
+        }
+        #endif
     }
 }
 

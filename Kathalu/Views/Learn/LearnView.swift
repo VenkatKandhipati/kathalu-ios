@@ -14,13 +14,21 @@ struct LearnView: View {
     @State private var showingDetail = false
     @State private var practice: PracticeSession?
 
+    // Reference charts start collapsed so Practice stays front and center.
+    @State private var vowelsExpanded = false
+    @State private var consonantsExpanded = false
+    @State private var guninthaluExpanded = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     header
                         .padding(.bottom, 6)
-                    Label("Tap any letter to hear it", systemImage: "speaker.wave.2")
+                    Label(model.soundEnabled
+                          ? "Tap any letter to hear it"
+                          : "Sound is off — letters won't be spoken",
+                          systemImage: model.soundEnabled ? "speaker.wave.2" : "speaker.slash")
                         .font(.system(size: 13))
                         .foregroundStyle(Theme.textSecondary)
                         .padding(.bottom, 24)
@@ -33,25 +41,30 @@ struct LearnView: View {
                     }
                     .padding(.bottom, 30)
 
-                    sectionHeader("VOWELS", telugu: AksharaData.vowels.telugu)
-                    aksharaGrid(AksharaData.vowels)
-                        .padding(.bottom, 30)
-
-                    sectionHeader("CONSONANTS", telugu: "హల్లులు")
-                    ForEach(AksharaData.consonantGroups) { group in
-                        vargaHeader(group)
-                        aksharaGrid(group)
-                            .padding(.bottom, 22)
+                    collapsibleHeader("VOWELS", telugu: AksharaData.vowels.telugu, isExpanded: $vowelsExpanded)
+                    if vowelsExpanded {
+                        aksharaGrid(AksharaData.vowels)
+                            .padding(.bottom, 14)
                     }
 
-                    sectionHeader("GUNINTHALU", telugu: "గుణింతాలు")
-                        .padding(.top, 8)
-                    NavigationLink {
-                        GuninthaluView()
-                    } label: {
-                        guninthaluChartRow
+                    collapsibleHeader("CONSONANTS", telugu: "హల్లులు", isExpanded: $consonantsExpanded)
+                    if consonantsExpanded {
+                        ForEach(AksharaData.consonantGroups) { group in
+                            vargaHeader(group)
+                            aksharaGrid(group)
+                                .padding(.bottom, 22)
+                        }
                     }
-                    .buttonStyle(.plain)
+
+                    collapsibleHeader("GUNINTHALU", telugu: "గుణింతాలు", isExpanded: $guninthaluExpanded)
+                    if guninthaluExpanded {
+                        NavigationLink {
+                            GuninthaluView()
+                        } label: {
+                            guninthaluChartRow
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.horizontal, 22)
                 .padding(.bottom, 24)
@@ -91,13 +104,18 @@ struct LearnView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Learn")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(Theme.textHeading)
-            Text("అక్షరాలు")
-                .font(Theme.sans(14))
-                .foregroundStyle(Theme.textTertiary)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Learn")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(Theme.textHeading)
+                Text("అక్షరాలు")
+                    .font(Theme.sans(14))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            Spacer()
+            SoundToggleButton(prominent: true)
+                .padding(.top, 8)
         }
     }
 
@@ -111,6 +129,32 @@ struct LearnView: View {
         }
         .foregroundStyle(Theme.textTertiary)
         .padding(.bottom, 12)
+    }
+
+    /// Section header that folds its chart away; charts start collapsed.
+    private func collapsibleHeader(_ title: String, telugu: String, isExpanded: Binding<Bool>) -> some View {
+        Button {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                isExpanded.wrappedValue.toggle()
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 12, weight: .bold))
+                    .tracking(1.7)
+                Text(telugu)
+                    .font(Theme.sans(12))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .rotationEffect(.degrees(isExpanded.wrappedValue ? 90 : 0))
+            }
+            .foregroundStyle(Theme.textTertiary)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, 8)
+        .padding(.bottom, 4)
     }
 
     private func vargaHeader(_ group: AksharaGroup) -> some View {
@@ -144,6 +188,7 @@ struct LearnView: View {
                 name: deck.titleEn,
                 subtitle: learned > 0 ? "\(learned) of \(total) letters learned" : "\(total) letters",
                 due: model.aksharaDueCount(for: deck),
+                newCount: model.aksharaNewCount(for: deck),
                 progressPct: learned * 100 / total)
         }
         .buttonStyle(.plain)
@@ -160,6 +205,7 @@ struct LearnView: View {
                 name: "Vowel signs",
                 subtitle: learned > 0 ? "\(learned) of \(total) signs learned" : "\(total) signs",
                 due: model.guninthaDueCount,
+                newCount: model.guninthaNewCount,
                 progressPct: learned * 100 / total)
         }
         .buttonStyle(.plain)
@@ -196,7 +242,7 @@ struct LearnView: View {
                 Button {
                     selected = AksharaSelection(akshara: akshara, group: group)
                     showingDetail = true
-                    model.speech.speak(akshara.spokenText)
+                    if model.soundEnabled { model.speech.speak(akshara.spokenText) }
                 } label: {
                     AksharaTile(
                         akshara: akshara,
@@ -214,6 +260,7 @@ struct DeckRow: View {
     let name: String
     let subtitle: String
     let due: Int
+    let newCount: Int
     let progressPct: Int
 
     var body: some View {
@@ -234,14 +281,12 @@ struct DeckRow: View {
             }
             Spacer()
             if due > 0 {
-                Text("\(due) due")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Theme.accent.opacity(0.1))
-                    .clipShape(Capsule())
-            } else if progressPct > 0 {
+                pill("\(due) due", color: Theme.accent)
+            }
+            if newCount > 0 {
+                pill("\(newCount) new", color: Theme.phonetic)
+            }
+            if due == 0 && newCount == 0 && progressPct > 0 {
                 ProficiencyRing(pct: progressPct, size: 22, lineWidth: 3)
             }
             Image(systemName: "chevron.right")
@@ -253,6 +298,16 @@ struct DeckRow: View {
         .background(Theme.card)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.cardBorder))
+    }
+
+    private func pill(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(color.opacity(0.1))
+            .clipShape(Capsule())
     }
 }
 

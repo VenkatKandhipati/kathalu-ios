@@ -8,6 +8,9 @@ struct AksharaReviewView: View {
     @Environment(\.dismiss) private var dismiss
 
     let deck: AksharaDeck
+    /// When embedded (in the Review tab's deck picker) the view skips its own
+    /// navigation chrome and close button.
+    var embedded = false
 
     @State private var queue: [Akshara] = []
     @State private var done = 0
@@ -19,31 +22,44 @@ struct AksharaReviewView: View {
     private let newPerSession = 10
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if queue.isEmpty {
-                    doneState
-                } else {
-                    session
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Theme.pageBackground)
-            .navigationTitle("\(deck.telugu) · \(deck.titleEn)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
+        Group {
+            if embedded {
+                content
+            } else {
+                NavigationStack {
+                    content
+                        .navigationTitle("\(deck.telugu) · \(deck.titleEn)")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button {
+                                    dismiss()
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundStyle(Theme.textSecondary)
+                                }
+                            }
+                            ToolbarItem(placement: .topBarTrailing) {
+                                SoundToggleButton()
+                            }
+                        }
                 }
             }
         }
         .onAppear(perform: buildSessionIfNeeded)
+    }
+
+    private var content: some View {
+        Group {
+            if queue.isEmpty {
+                doneState
+            } else {
+                session
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.pageBackground)
     }
 
     private func buildSessionIfNeeded() {
@@ -77,14 +93,16 @@ struct AksharaReviewView: View {
                  : "Nothing due today · \(model.aksharaLearnedCount(for: deck)) of \(deck.aksharas.count) learned")
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.textSecondary)
-            Button {
-                dismiss()
-            } label: {
-                Text("Done")
-                    .primaryButton()
+            if !embedded {
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Done")
+                        .primaryButton()
+                }
+                .padding(.horizontal, 60)
+                .padding(.top, 18)
             }
-            .padding(.horizontal, 60)
-            .padding(.top, 18)
         }
     }
 
@@ -175,7 +193,7 @@ struct AksharaReviewView: View {
     private func reveal(_ akshara: Akshara) {
         guard !revealed else { return }
         withAnimation(.spring(duration: 0.45)) { revealed = true }
-        model.speech.speak(akshara.spokenText)
+        if model.soundEnabled { model.speech.speak(akshara.spokenText) }
     }
 
     private func rate(_ akshara: Akshara, _ quality: Int) {

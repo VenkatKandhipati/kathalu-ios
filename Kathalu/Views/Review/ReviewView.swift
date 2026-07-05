@@ -4,6 +4,13 @@ import SwiftUI
 struct ReviewView: View {
     @Environment(AppModel.self) private var model
 
+    /// What's being reviewed: story vocabulary or one of the script decks.
+    enum DeckChoice: String, CaseIterable, Identifiable {
+        case words, vowels, consonants, guninthalu
+        var id: String { rawValue }
+    }
+
+    @State private var deckChoice: DeckChoice = .words
     @State private var queue: [VocabCard] = []
     @State private var done = 0
     @State private var revealed = false
@@ -11,13 +18,18 @@ struct ReviewView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if model.deckCards.isEmpty {
-                    emptyState
-                } else if queue.isEmpty {
-                    doneState
-                } else {
-                    session
+            VStack(spacing: 0) {
+                deckPicker
+                    .padding(.top, 10)
+                switch deckChoice {
+                case .words:
+                    wordsContent
+                case .vowels:
+                    AksharaReviewView(deck: .vowels, embedded: true)
+                case .consonants:
+                    AksharaReviewView(deck: .consonants, embedded: true)
+                case .guninthalu:
+                    GuninthaluReviewView(embedded: true)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -25,6 +37,9 @@ struct ReviewView: View {
             .navigationTitle("Review")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    SoundToggleButton()
+                }
                 if model.data.streak > 0 {
                     ToolbarItem(placement: .topBarTrailing) {
                         StreakBadge(count: model.data.streak)
@@ -33,6 +48,68 @@ struct ReviewView: View {
             }
         }
         .onAppear(perform: buildSessionIfNeeded)
+    }
+
+    private var wordsContent: some View {
+        Group {
+            if model.deckCards.isEmpty {
+                emptyState
+            } else if queue.isEmpty {
+                doneState
+            } else {
+                session
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Deck switcher chips; script decks show their due counts inline.
+    private var deckPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(DeckChoice.allCases) { choice in
+                    deckChip(choice)
+                }
+            }
+            .padding(.horizontal, 22)
+        }
+    }
+
+    private func deckChip(_ choice: DeckChoice) -> some View {
+        let isOn = deckChoice == choice
+        return Button {
+            withAnimation(.snappy) { deckChoice = choice }
+        } label: {
+            Text(chipLabel(choice))
+                .font(Theme.sans(13, weight: .semibold))
+                .foregroundStyle(isOn ? .white : Theme.textSecondary)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 7)
+                .background(isOn ? Theme.accent : Theme.card)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(isOn ? .clear : Theme.cardBorder))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func chipLabel(_ choice: DeckChoice) -> String {
+        let due: Int
+        let name: String
+        switch choice {
+        case .words:
+            name = "Story words"
+            due = model.dueCount
+        case .vowels:
+            name = "అచ్చులు"
+            due = model.aksharaDueCount(for: .vowels)
+        case .consonants:
+            name = "హల్లులు"
+            due = model.aksharaDueCount(for: .consonants)
+        case .guninthalu:
+            name = "గుణింతాలు"
+            due = model.guninthaDueCount
+        }
+        return due > 0 ? "\(name) · \(due)" : name
     }
 
     /// Due cards first (oldest due first), then up to 20 new cards — same
@@ -95,7 +172,7 @@ struct ReviewView: View {
             Spacer()
             if let card = queue.first {
                 DeckStackView(card: card, revealed: revealed, depth: min(3, queue.count))
-                    .onTapGesture { withAnimation(.spring(duration: 0.45)) { revealed = true } }
+                    .onTapGesture { reveal(card) }
                     .padding(.horizontal, 40)
             }
             Spacer()
@@ -137,15 +214,23 @@ struct ReviewView: View {
                 rateButton("Easy", preview: SM2.intervalPreview(for: card, quality: 5), color: Theme.rateEasy) { rate(card, 5) }
             }
             .padding(.horizontal, 22)
-        } else {
+        } else if let card = queue.first {
             Button {
-                withAnimation(.spring(duration: 0.45)) { revealed = true }
+                reveal(card)
             } label: {
                 Text("Reveal")
                     .primaryButton()
             }
             .padding(.horizontal, 22)
         }
+    }
+
+    /// Revealing also pronounces the word (when sound is on), matching the
+    /// script-deck sessions.
+    private func reveal(_ card: VocabCard) {
+        guard !revealed else { return }
+        withAnimation(.spring(duration: 0.45)) { revealed = true }
+        if model.soundEnabled { model.speech.speak(card.telugu) }
     }
 
     private func rateButton(_ label: String, preview: String, color: Color, action: @escaping () -> Void) -> some View {

@@ -247,6 +247,10 @@ final class AppModel {
         AksharaData.vowelSigns.filter { (guninthaCard(for: $0)?.repetitions ?? 0) >= 2 }.count
     }
 
+    var guninthaNewCount: Int {
+        AksharaData.vowelSigns.filter { guninthaCard(for: $0)?.isNew ?? true }.count
+    }
+
     /// Consonants paired with sign cards in the guninthalu quiz: the learner's
     /// studied consonants once there are enough, else a starter set.
     var guninthaQuizPool: [Akshara] {
@@ -263,6 +267,11 @@ final class AppModel {
     /// Letters answered correctly at least twice — same bar as `wordsKnown`.
     func aksharaLearnedCount(for deck: AksharaDeck) -> Int {
         deck.aksharas.filter { (aksharaCards[$0.letter]?.repetitions ?? 0) >= 2 }.count
+    }
+
+    /// Letters not yet introduced (or reset by an "Again" rating).
+    func aksharaNewCount(for deck: AksharaDeck) -> Int {
+        deck.aksharas.filter { aksharaCards[$0.letter]?.isNew ?? true }.count
     }
 
     var aksharaDueTotal: Int {

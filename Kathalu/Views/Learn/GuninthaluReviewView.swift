@@ -8,6 +8,10 @@ struct GuninthaluReviewView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
+    /// When embedded (in the Review tab's deck picker) the view skips its own
+    /// navigation chrome and close button.
+    var embedded = false
+
     /// One queued card: a sign and the consonant it's dressed in this time.
     private struct QuizItem: Identifiable {
         let sign: VowelSign
@@ -26,31 +30,44 @@ struct GuninthaluReviewView: View {
     private let newPerSession = 8
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if queue.isEmpty {
-                    doneState
-                } else {
-                    session
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Theme.pageBackground)
-            .navigationTitle("గుణింతాలు · Vowel signs")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
+        Group {
+            if embedded {
+                content
+            } else {
+                NavigationStack {
+                    content
+                        .navigationTitle("గుణింతాలు · Vowel signs")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button {
+                                    dismiss()
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundStyle(Theme.textSecondary)
+                                }
+                            }
+                            ToolbarItem(placement: .topBarTrailing) {
+                                SoundToggleButton()
+                            }
+                        }
                 }
             }
         }
         .onAppear(perform: buildSessionIfNeeded)
+    }
+
+    private var content: some View {
+        Group {
+            if queue.isEmpty {
+                doneState
+            } else {
+                session
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.pageBackground)
     }
 
     private func buildSessionIfNeeded() {
@@ -91,14 +108,16 @@ struct GuninthaluReviewView: View {
                  : "Nothing due today · \(model.guninthaLearnedCount) of \(AksharaData.vowelSigns.count) learned")
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.textSecondary)
-            Button {
-                dismiss()
-            } label: {
-                Text("Done")
-                    .primaryButton()
+            if !embedded {
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Done")
+                        .primaryButton()
+                }
+                .padding(.horizontal, 60)
+                .padding(.top, 18)
             }
-            .padding(.horizontal, 60)
-            .padding(.top, 18)
         }
     }
 
@@ -250,7 +269,7 @@ struct GuninthaluReviewView: View {
     private func reveal(_ item: QuizItem) {
         guard !revealed else { return }
         withAnimation(.spring(duration: 0.45)) { revealed = true }
-        model.speech.speak(item.form)
+        if model.soundEnabled { model.speech.speak(item.form) }
     }
 
     private func rate(_ item: QuizItem, _ quality: Int) {
