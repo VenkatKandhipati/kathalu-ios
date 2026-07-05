@@ -209,7 +209,16 @@ final class AppModel {
     // MARK: Script decks (Learn tab)
 
     func rate(akshara: Akshara, quality: Int) {
-        var card = aksharaCards[akshara.letter] ?? AksharaCard(letter: akshara.letter)
+        rateScriptCard(key: akshara.letter, quality: quality)
+    }
+
+    func rate(sign: VowelSign, quality: Int) {
+        rateScriptCard(key: Self.guninthaKey(sign), quality: quality)
+    }
+
+    /// One SM-2 update for any script-deck key (letters, vowel signs, …).
+    private func rateScriptCard(key: String, quality: Int) {
+        var card = aksharaCards[key] ?? AksharaCard(letter: key)
         let result = SM2.schedule(
             interval: card.interval,
             easeFactor: card.easeFactor,
@@ -219,8 +228,31 @@ final class AppModel {
         card.easeFactor = result.easeFactor
         card.repetitions = result.repetitions
         card.nextReview = result.nextReview
-        aksharaCards[akshara.letter] = card
+        aksharaCards[key] = card
         aksharaStore.save(aksharaCards)
+    }
+
+    /// Vowel-sign cards are namespaced so they can't collide with letters.
+    static func guninthaKey(_ sign: VowelSign) -> String { "gunintha:\(sign.vowel)" }
+
+    func guninthaCard(for sign: VowelSign) -> AksharaCard? {
+        aksharaCards[Self.guninthaKey(sign)]
+    }
+
+    var guninthaDueCount: Int {
+        AksharaData.vowelSigns.filter { guninthaCard(for: $0).map { !$0.isNew && $0.isDue } ?? false }.count
+    }
+
+    var guninthaLearnedCount: Int {
+        AksharaData.vowelSigns.filter { (guninthaCard(for: $0)?.repetitions ?? 0) >= 2 }.count
+    }
+
+    /// Consonants paired with sign cards in the guninthalu quiz: the learner's
+    /// studied consonants once there are enough, else a starter set.
+    var guninthaQuizPool: [Akshara] {
+        let studied = AksharaDeck.consonants.aksharas
+            .filter { (aksharaCards[$0.letter]?.repetitions ?? 0) >= 1 }
+        return studied.count >= 8 ? studied : AksharaData.starterQuizConsonants
     }
 
     /// Studied letters that are due again (new letters don't count).
@@ -234,7 +266,7 @@ final class AppModel {
     }
 
     var aksharaDueTotal: Int {
-        AksharaDeck.allCases.reduce(0) { $0 + aksharaDueCount(for: $1) }
+        AksharaDeck.allCases.reduce(0) { $0 + aksharaDueCount(for: $1) } + guninthaDueCount
     }
 
     // MARK: Stats

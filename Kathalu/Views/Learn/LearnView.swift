@@ -4,9 +4,15 @@ import SwiftUI
 /// charts for the vowels (అచ్చులు) and consonants (హల్లులు).
 struct LearnView: View {
     @Environment(AppModel.self) private var model
+    /// The three quiz decks launchable from the Practice section.
+    enum PracticeSession: String, Identifiable {
+        case vowels, consonants, guninthalu
+        var id: String { rawValue }
+    }
+
     @State private var selected: AksharaSelection?
     @State private var showingDetail = false
-    @State private var practiceDeck: AksharaDeck?
+    @State private var practice: PracticeSession?
 
     var body: some View {
         NavigationStack {
@@ -21,14 +27,9 @@ struct LearnView: View {
 
                     sectionHeader("PRACTICE", telugu: "సాధన")
                     VStack(spacing: 10) {
-                        ForEach(AksharaDeck.allCases) { deck in
-                            Button {
-                                practiceDeck = deck
-                            } label: {
-                                DeckRow(deck: deck)
-                            }
-                            .buttonStyle(.plain)
-                        }
+                        deckButton(.vowels)
+                        deckButton(.consonants)
+                        guninthaButton
                     }
                     .padding(.bottom, 30)
 
@@ -42,21 +43,34 @@ struct LearnView: View {
                         aksharaGrid(group)
                             .padding(.bottom, 22)
                     }
+
+                    sectionHeader("GUNINTHALU", telugu: "గుణింతాలు")
+                        .padding(.top, 8)
+                    NavigationLink {
+                        GuninthaluView()
+                    } label: {
+                        guninthaluChartRow
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 22)
                 .padding(.bottom, 24)
             }
             .background(Theme.background)
-            .fullScreenCover(item: $practiceDeck) { deck in
-                AksharaReviewView(deck: deck)
+            .fullScreenCover(item: $practice) { session in
+                switch session {
+                case .vowels: AksharaReviewView(deck: .vowels)
+                case .consonants: AksharaReviewView(deck: .consonants)
+                case .guninthalu: GuninthaluReviewView()
+                }
             }
             .onAppear {
                 #if DEBUG
                 // Debug hook: `simctl launch … -openDeck vowels` starts a session.
                 if let raw = UserDefaults.standard.string(forKey: "openDeck"),
-                   let deck = AksharaDeck(rawValue: raw) {
+                   let session = PracticeSession(rawValue: raw) {
                     UserDefaults.standard.removeObject(forKey: "openDeck")
-                    practiceDeck = deck
+                    practice = session
                 }
                 #endif
             }
@@ -119,6 +133,60 @@ struct LearnView: View {
         .padding(.bottom, 10)
     }
 
+    private func deckButton(_ deck: AksharaDeck) -> some View {
+        let total = deck.aksharas.count
+        let learned = model.aksharaLearnedCount(for: deck)
+        return Button {
+            practice = PracticeSession(rawValue: deck.rawValue)
+        } label: {
+            DeckRow(
+                telugu: deck.telugu,
+                name: deck.titleEn,
+                subtitle: learned > 0 ? "\(learned) of \(total) letters learned" : "\(total) letters",
+                due: model.aksharaDueCount(for: deck),
+                progressPct: learned * 100 / total)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var guninthaButton: some View {
+        let total = AksharaData.vowelSigns.count
+        let learned = model.guninthaLearnedCount
+        return Button {
+            practice = .guninthalu
+        } label: {
+            DeckRow(
+                telugu: "గుణింతాలు",
+                name: "Vowel signs",
+                subtitle: learned > 0 ? "\(learned) of \(total) signs learned" : "\(total) signs",
+                due: model.guninthaDueCount,
+                progressPct: learned * 100 / total)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var guninthaluChartRow: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("క · కా · కి · కీ · కు …")
+                    .font(Theme.serif(17, weight: .semibold))
+                    .foregroundStyle(Theme.textHeading)
+                Text("Every consonant × 16 vowel signs")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Theme.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.cardBorder))
+    }
+
     private func aksharaGrid(_ group: AksharaGroup) -> some View {
         LazyVGrid(
             columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 4),
@@ -142,29 +210,25 @@ struct LearnView: View {
 
 /// One tappable practice deck: name, learning progress, due count.
 struct DeckRow: View {
-    @Environment(AppModel.self) private var model
-
-    let deck: AksharaDeck
+    let telugu: String
+    let name: String
+    let subtitle: String
+    let due: Int
+    let progressPct: Int
 
     var body: some View {
-        let total = deck.aksharas.count
-        let learned = model.aksharaLearnedCount(for: deck)
-        let due = model.aksharaDueCount(for: deck)
-
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 7) {
-                    Text(deck.telugu)
+                    Text(telugu)
                         .font(Theme.sans(16, weight: .semibold))
                         .foregroundStyle(Theme.textHeading)
-                    Text(deck.titleEn)
+                    Text(name)
                         .font(Theme.latinSerif(13))
                         .italic()
                         .foregroundStyle(Theme.textSecondary)
                 }
-                Text(learned > 0
-                     ? "\(learned) of \(total) letters learned"
-                     : "\(total) letters")
+                Text(subtitle)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -177,8 +241,8 @@ struct DeckRow: View {
                     .padding(.vertical, 5)
                     .background(Theme.accent.opacity(0.1))
                     .clipShape(Capsule())
-            } else if learned > 0 {
-                ProficiencyRing(pct: learned * 100 / total, size: 22, lineWidth: 3)
+            } else if progressPct > 0 {
+                ProficiencyRing(pct: progressPct, size: 22, lineWidth: 3)
             }
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))

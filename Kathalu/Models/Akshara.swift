@@ -14,6 +14,25 @@ struct Akshara: Identifiable, Hashable {
     var spokenText: String { spoken ?? letter }
 }
 
+/// One of the 16 secondary vowel signs (guninthapu gurthulu). Applied to any
+/// consonant it yields one guninthamu form: క + ా = కా.
+struct VowelSign: Identifiable, Hashable {
+    let vowel: String   // ఆ — the primary vowel this sign carries
+    let sign: String    // ా (empty for the bare talakattu form)
+    let name: String    // Dheergam
+    let suffix: String  // ā — replaces the consonant's inherent "a"
+
+    var id: String { vowel }
+
+    func apply(to consonant: Akshara) -> String {
+        consonant.letter + sign
+    }
+
+    func trans(for consonant: Akshara) -> String {
+        String(consonant.trans.dropLast()) + suffix
+    }
+}
+
 /// SM-2 scheduling state for one letter in a script deck. Kept apart from
 /// VocabCard: script progress is device-local and never synced.
 struct AksharaCard: Codable, Hashable {
@@ -176,4 +195,39 @@ enum AksharaData {
         if vowels.aksharas.contains(akshara) { return vowels }
         return consonantGroups.first { $0.aksharas.contains(akshara) }
     }
+
+    /// The 16 vowel signs in canonical guninthamu order. Forms are generated
+    /// by appending the sign to a consonant, so all 36 × 16 combinations come
+    /// from this one table.
+    static let vowelSigns: [VowelSign] = [
+        VowelSign(vowel: "అ", sign: "", name: "Talakattu", suffix: "a"),
+        VowelSign(vowel: "ఆ", sign: "ా", name: "Dheergam", suffix: "ā"),
+        VowelSign(vowel: "ఇ", sign: "ి", name: "Gudi", suffix: "i"),
+        VowelSign(vowel: "ఈ", sign: "ీ", name: "Gudi Dheergam", suffix: "ī"),
+        VowelSign(vowel: "ఉ", sign: "ు", name: "Kommu", suffix: "u"),
+        VowelSign(vowel: "ఊ", sign: "ూ", name: "Kommu Dheergam", suffix: "ū"),
+        VowelSign(vowel: "ఋ", sign: "ృ", name: "Rutvamu", suffix: "ṛ"),
+        VowelSign(vowel: "ౠ", sign: "ౄ", name: "Rutva Dheergam", suffix: "ṝ"),
+        VowelSign(vowel: "ఎ", sign: "ె", name: "Ethvamu", suffix: "e"),
+        VowelSign(vowel: "ఏ", sign: "ే", name: "Yethvamu", suffix: "ē"),
+        VowelSign(vowel: "ఐ", sign: "ై", name: "Aithvamu", suffix: "ai"),
+        VowelSign(vowel: "ఒ", sign: "ొ", name: "Othvamu", suffix: "o"),
+        VowelSign(vowel: "ఓ", sign: "ో", name: "Othvamu Dheergam", suffix: "ō"),
+        VowelSign(vowel: "ఔ", sign: "ౌ", name: "Authvamu", suffix: "au"),
+        VowelSign(vowel: "అం", sign: "ం", name: "Sunna", suffix: "aṁ"),
+        VowelSign(vowel: "అః", sign: "ః", name: "Visarga", suffix: "aḥ"),
+    ]
+
+    /// The vowel a sign corresponds to (for its name and sound hint).
+    static func vowel(for sign: VowelSign) -> Akshara? {
+        vowels.aksharas.first { $0.letter == sign.vowel }
+    }
+
+    /// Everyday consonants paired with sign cards in the guninthalu quiz
+    /// until the learner has studied enough of the consonant deck.
+    static let starterQuizConsonants: [Akshara] = {
+        let common: Set<String> = ["క", "గ", "చ", "జ", "ట", "డ", "త", "ద",
+                                   "న", "ప", "బ", "మ", "ర", "ల", "వ", "స"]
+        return consonants.filter { common.contains($0.letter) }
+    }()
 }
