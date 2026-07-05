@@ -12,7 +12,7 @@ struct RootView: View {
     }
 }
 
-/// The design's four tabs: Library · Review · Progress · Profile.
+/// The app's tabs: Library · Learn · Review · Progress · Profile.
 struct MainTabView: View {
     @Environment(AppModel.self) private var model
     @State private var selectedTab = initialTab
@@ -31,6 +31,11 @@ struct MainTabView: View {
             LibraryView()
                 .tabItem { Label("Library", systemImage: "books.vertical") }
                 .tag("library")
+
+            LearnView()
+                .tabItem { Label("Learn", systemImage: "character.book.closed") }
+                .badge(model.aksharaDueTotal > 0 ? model.aksharaDueTotal : 0)
+                .tag("learn")
 
             ReviewView()
                 .tabItem { Label("Review", systemImage: "rectangle.on.rectangle") }

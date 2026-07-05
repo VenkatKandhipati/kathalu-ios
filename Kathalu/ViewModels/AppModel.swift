@@ -9,6 +9,8 @@ final class AppModel {
 
     let storyStore = StoryStore()
     var data: UserData
+    /// Script-deck SM-2 state, keyed by letter (local-only, see AksharaStore).
+    var aksharaCards: [String: AksharaCard]
 
     // MARK: Settings (mirrors the web app's theme / storyFontSize keys)
 
@@ -87,6 +89,7 @@ final class AppModel {
 
     let speech = SpeechService()
     private let localStore = LocalStore()
+    private let aksharaStore = AksharaStore()
     private let auth = AuthService()
     private let api: APIClient
     private let sync: SyncEngine
@@ -97,6 +100,7 @@ final class AppModel {
 
     init() {
         data = localStore.load()
+        aksharaCards = aksharaStore.load()
         appearance = Appearance(rawValue: UserDefaults.standard.string(forKey: "appearance") ?? "") ?? .system
         fontSize = ReadingFontSize(rawValue: UserDefaults.standard.string(forKey: "storyFontSize") ?? "") ?? .medium
         readingMode = ReadingMode(rawValue: UserDefaults.standard.string(forKey: "readingMode") ?? "") ?? .scroll
@@ -200,6 +204,37 @@ final class AppModel {
         data.cards[card.telugu] = updated
         persist()
         if isSignedIn { sync.pushCard(updated) }
+    }
+
+    // MARK: Script decks (Learn tab)
+
+    func rate(akshara: Akshara, quality: Int) {
+        var card = aksharaCards[akshara.letter] ?? AksharaCard(letter: akshara.letter)
+        let result = SM2.schedule(
+            interval: card.interval,
+            easeFactor: card.easeFactor,
+            repetitions: card.repetitions,
+            quality: quality)
+        card.interval = result.interval
+        card.easeFactor = result.easeFactor
+        card.repetitions = result.repetitions
+        card.nextReview = result.nextReview
+        aksharaCards[akshara.letter] = card
+        aksharaStore.save(aksharaCards)
+    }
+
+    /// Studied letters that are due again (new letters don't count).
+    func aksharaDueCount(for deck: AksharaDeck) -> Int {
+        deck.aksharas.filter { aksharaCards[$0.letter].map { !$0.isNew && $0.isDue } ?? false }.count
+    }
+
+    /// Letters answered correctly at least twice — same bar as `wordsKnown`.
+    func aksharaLearnedCount(for deck: AksharaDeck) -> Int {
+        deck.aksharas.filter { (aksharaCards[$0.letter]?.repetitions ?? 0) >= 2 }.count
+    }
+
+    var aksharaDueTotal: Int {
+        AksharaDeck.allCases.reduce(0) { $0 + aksharaDueCount(for: $1) }
     }
 
     // MARK: Stats

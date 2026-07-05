@@ -45,13 +45,29 @@ enum SM2 {
     }
 
     /// Human label for the interval a rating would produce ("<1m", "1d", "6d"...).
-    static func intervalPreview(for card: VocabCard, quality: Int) -> String {
+    static func intervalPreview(interval: Int, easeFactor: Double, repetitions: Int, quality: Int) -> String {
         if quality < 3 { return "<1m" }
         let result = schedule(
+            interval: interval,
+            easeFactor: easeFactor,
+            repetitions: repetitions,
+            quality: quality)
+        return "\(result.interval)d"
+    }
+
+    static func intervalPreview(for card: VocabCard, quality: Int) -> String {
+        intervalPreview(
             interval: card.interval,
             easeFactor: card.easeFactor,
             repetitions: card.repetitions,
             quality: quality)
-        return "\(result.interval)d"
+    }
+
+    static func intervalPreview(for card: AksharaCard, quality: Int) -> String {
+        intervalPreview(
+            interval: card.interval,
+            easeFactor: card.easeFactor,
+            repetitions: card.repetitions,
+            quality: quality)
     }
 }
