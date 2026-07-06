@@ -4,7 +4,7 @@ A planning reference for future work. Two parts:
 1. **Proposed features**, ordered by the product priority we agreed on.
 2. **Bugs & existing issues** worth fixing, ordered by severity.
 
-Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-timer work).
+Last reviewed after the Aksharamala phase 1–3 build (Learn tab, script decks, guninthalu) and the global sound-toggle / Review-tab work.
 
 **Effort key:** S ≈ ½–1 day · M ≈ 2–4 days · L ≈ 1–2 weeks · XL ≈ multi-week / new target.
 
@@ -67,13 +67,15 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 - Seed a bundled `Resources/aksharas.json` (partly generatable from `Transliterator`'s maps); mastery / scheduling state lives in `UserData` under its own keyspace so it syncs through the existing engine.
 
 **Effort: XL — phase it**
-1. **Reference charts** for vowels + consonants, tap-to-hear (M).
-2. **Flashcard decks** for vowels + consonants over SM-2, separate from vocab (M).
-3. **Guninthalu** reference + drills (M–L).
-4. **Vatthulu** reference + drills (M–L).
+1. ✅ **Done — Reference charts** for vowels + consonants, tap-to-hear (M). Shipped as the Learn tab: collapsible chart sections (closed by default), tap-to-hear tiles, and a compact detail drawer (glyph, romanization, sound hint, varga) that stays minimal while hopping between letters.
+2. ✅ **Done — Flashcard decks** for vowels + consonants over SM-2, separate from vocab (M). Shuffled sessions (10 new/session), auto-pronounce on reveal, due/new pills on the Practice rows, Learn-tab badge for due letters, and the decks are also selectable from the Review tab's new deck picker.
+3. ✅ **Done — Guninthalu** reference + drills (M–L). All 36×16 forms are *generated* from a 16-row vowel-sign table (no hardcoded grid): a Guninthalu explorer (consonant picker → full గుణింతం chart with formation breakdowns) plus an SM-2 quiz over the 16 signs where each rep pairs the sign with a rotating consonant (క first, then consonants the learner has studied) so the pattern transfers.
+4. **Vatthulu** reference + drills (M–L). ← **next up**
 5. **Gamified lesson path** + mastery / progression + streak tie-in (L–XL).
 
 **Files:** new `Views/Learn/`, `Models/Akshara.swift`, `Resources/aksharas.json`, extend `UserData` / `AppModel` for script mastery, reuse `Transliterator` / `SpeechService` / `SM2` / `DeckStackView`, add a tab in `RootView`.
+
+**As-built notes (phases 1–3):** script data lives in code (`Models/Akshara.swift`) rather than `aksharas.json`; SM-2 state lives in a separate local `aksharacards.json` (`AksharaStore`) — deliberately *outside* `UserData`, because the sign-in merge rebuilds `UserData` from the server and would wipe unknown fields. Script progress is therefore local-only for now (cloud sync would need backend support). Guninthalu quiz state is namespaced in the same store (`gunintha:<vowel>` keys).
 
 ### 3. Resume reading position (per-story bookmark)
 **Priority: high, low cost.** Reopening a story always restarts at the top — punishing for longer reads spread across sessions.
@@ -104,18 +106,15 @@ Last reviewed against `main` @ commit `b05ad58` (post sound-toggle / reading-tim
 
 **Effort: M.** **Files:** new `Services/NotificationService.swift`, `ProfileView`, `AppModel`.
 
-### 5. TTS voice & speed customization
-**Priority: medium, low cost.** `SpeechService` hardcodes `te-IN` at rate `0.42`. Learners vary; slower pronunciation is a common ask. Natural complement to the new sound toggle.
+### 5. ✅ TTS voice & speed customization — Done
+**Shipped.** A "Voice & speed" settings screen (`SpeechSettingsView`), reachable from **Profile → Reading** and from the reader's **Aa menu** ("Voice & speed…" sheet):
+- **Voice picker** listing every installed Telugu `AVSpeechSynthesisVoice` with Enhanced/Premium quality badges, plus a "System default" option; tapping a voice previews it immediately. Falls back gracefully (chosen voice → te-IN default → system voice) if a voice is uninstalled later.
+- **Rate slider** (tortoise → hare, 0.2–0.65; default 0.42) that speaks a sample on release, with a reset-to-default button.
+- **Global "Pronounce words on tap" toggle** lives here too (same `soundEnabled` setting as the Aa menu and the Learn/Review speaker buttons).
+- Persisted as `speechVoiceID` / `speechRate` in `AppModel`, applied by `SpeechService` per utterance.
+- _Note:_ iOS ships few Telugu voices; the screen's footer points users to **Settings → Accessibility → Spoken Content → Voices → Telugu** to download the more natural Enhanced/Premium voices — the app cannot trigger that download itself.
 
-**What to build**
-- A rate slider and a voice picker (enumerate available `AVSpeechSynthesisVoice`s for Telugu; fall back gracefully when none is installed), persisted like the other `AppModel` settings.
-- Surface in the "Aa" reader menu and/or Profile → Reading.
-- A "test" button that speaks a sample word at the chosen settings.
-
-**Approach notes**
-- The `AVAudioSession` groundwork (silent-mode playback, ducking, missing-voice fallback) is already done — see the fixed bug in Part 2. This feature is now purely about exposing rate/voice as persisted user settings.
-
-**Effort: S.** **Files:** `SpeechService`, `AppModel`, `ReaderView` / `ProfileView`.
+**Related work also done:** global sound toggle surfaced across Learn/Review/Guninthalu screens; vocab review cards now speak on reveal; Review tab gained a deck picker (Story words + script decks).
 
 ### 6. Richer word detail (senses, example sentences, occurrences)
 **Priority: medium. Builds on #1.** The word sheet shows pronunciation + a single gloss. Context and multiple senses drive retention.

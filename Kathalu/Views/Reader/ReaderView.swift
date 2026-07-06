@@ -20,6 +20,8 @@ struct ReaderView: View {
     @State private var scrollParagraphs: [[ReaderPage.Token]] = []
     /// One-time coach hint letting readers know the sound toggle lives in "Aa".
     @State private var showSoundTip = false
+    /// Voice & speed settings sheet, reachable from the "Aa" menu.
+    @State private var showSpeechSettings = false
     /// Reading time banked from completed (active) segments this session.
     @State private var timerAccumulated: TimeInterval = 0
     /// Start of the current active segment; nil while paused (backgrounded).
@@ -46,6 +48,12 @@ struct ReaderView: View {
             WordSheetView(word: item.word, story: story)
                 .presentationDetents([.height(400)])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showSpeechSettings) {
+            NavigationStack {
+                SpeechSettingsView()
+            }
+            .presentationDetents([.medium, .large])
         }
         .onAppear {
             resumeTimer()
@@ -196,6 +204,12 @@ struct ReaderView: View {
                 get: { model.showReadingTimer },
                 set: { model.showReadingTimer = $0 })) {
                 Label("Show reading timer", systemImage: "stopwatch")
+            }
+            Divider()
+            Button {
+                showSpeechSettings = true
+            } label: {
+                Label("Voice & speed…", systemImage: "waveform")
             }
         } label: {
             Text("Aa")

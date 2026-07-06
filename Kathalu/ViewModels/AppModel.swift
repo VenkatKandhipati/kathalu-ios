@@ -72,6 +72,20 @@ final class AppModel {
     var soundEnabled: Bool {
         didSet { UserDefaults.standard.set(soundEnabled, forKey: "soundEnabled") }
     }
+    /// Preferred TTS voice identifier; nil follows the system's Telugu default.
+    var speechVoiceID: String? {
+        didSet {
+            UserDefaults.standard.set(speechVoiceID, forKey: "speechVoiceID")
+            speech.voiceIdentifier = speechVoiceID
+        }
+    }
+    /// Speaking rate in AVSpeechUtterance units (0–1).
+    var speechRate: Double {
+        didSet {
+            UserDefaults.standard.set(speechRate, forKey: "speechRate")
+            speech.rate = Float(speechRate)
+        }
+    }
     /// Whether the reader shows a minimal stopwatch of the current session's
     /// reading time. On by default; kept minimal so it doesn't intrude.
     var showReadingTimer: Bool {
@@ -105,12 +119,18 @@ final class AppModel {
         fontSize = ReadingFontSize(rawValue: UserDefaults.standard.string(forKey: "storyFontSize") ?? "") ?? .medium
         readingMode = ReadingMode(rawValue: UserDefaults.standard.string(forKey: "readingMode") ?? "") ?? .scroll
         soundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
+        speechVoiceID = UserDefaults.standard.string(forKey: "speechVoiceID")
+        speechRate = UserDefaults.standard.object(forKey: "speechRate") as? Double ?? SpeechService.defaultRate
         showReadingTimer = UserDefaults.standard.object(forKey: "showReadingTimer") as? Bool ?? true
         hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
         hasSeenSoundTip = UserDefaults.standard.bool(forKey: "hasSeenSoundTip")
         let apiClient = APIClient(auth: auth)
         api = apiClient
         sync = SyncEngine(api: apiClient)
+
+        // didSet doesn't fire during init — push the loaded values through.
+        speech.voiceIdentifier = speechVoiceID
+        speech.rate = Float(speechRate)
 
         if let session = auth.session {
             Task { await hydrate(userID: session.userID) }

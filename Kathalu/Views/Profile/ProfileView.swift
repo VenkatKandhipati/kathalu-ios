@@ -32,6 +32,12 @@ struct ProfileView: View {
                     } label: {
                         settingLabel("Reading font size", systemImage: "textformat.size")
                     }
+
+                    NavigationLink {
+                        SpeechSettingsView()
+                    } label: {
+                        settingLabel("Voice & speed", systemImage: "speaker.wave.2")
+                    }
                 }
                 .listRowBackground(Theme.card)
 
