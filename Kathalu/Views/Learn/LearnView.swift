@@ -4,9 +4,9 @@ import SwiftUI
 /// charts for the vowels (అచ్చులు) and consonants (హల్లులు).
 struct LearnView: View {
     @Environment(AppModel.self) private var model
-    /// The three quiz decks launchable from the Practice section.
+    /// The quiz decks launchable from the Practice section.
     enum PracticeSession: String, Identifiable {
-        case vowels, consonants, guninthalu
+        case vowels, consonants, guninthalu, vatthulu
         var id: String { rawValue }
     }
 
@@ -18,6 +18,7 @@ struct LearnView: View {
     @State private var vowelsExpanded = false
     @State private var consonantsExpanded = false
     @State private var guninthaluExpanded = false
+    @State private var vatthuluExpanded = false
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,7 @@ struct LearnView: View {
                         deckButton(.vowels)
                         deckButton(.consonants)
                         guninthaButton
+                        vatthuButton
                     }
                     .padding(.bottom, 30)
 
@@ -61,7 +63,20 @@ struct LearnView: View {
                         NavigationLink {
                             GuninthaluView()
                         } label: {
-                            guninthaluChartRow
+                            chartRow(sample: "క · కా · కి · కీ · కు …",
+                                     subtitle: "Every consonant × 16 vowel signs")
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.bottom, 14)
+                    }
+
+                    collapsibleHeader("VATTHULU", telugu: "వత్తులు", isExpanded: $vatthuluExpanded)
+                    if vatthuluExpanded {
+                        NavigationLink {
+                            VatthuluView()
+                        } label: {
+                            chartRow(sample: "క్క · స్త · ల్ల · ద్ద …",
+                                     subtitle: "The subscript forms consonants take in clusters")
                         }
                         .buttonStyle(.plain)
                     }
@@ -75,6 +90,7 @@ struct LearnView: View {
                 case .vowels: AksharaReviewView(deck: .vowels)
                 case .consonants: AksharaReviewView(deck: .consonants)
                 case .guninthalu: GuninthaluReviewView()
+                case .vatthulu: VatthuluReviewView()
                 }
             }
             .onAppear {
@@ -211,13 +227,31 @@ struct LearnView: View {
         .buttonStyle(.plain)
     }
 
-    private var guninthaluChartRow: some View {
+    private var vatthuButton: some View {
+        let total = AksharaData.quizVatthulu.count
+        let learned = model.vatthuLearnedCount
+        return Button {
+            practice = .vatthulu
+        } label: {
+            DeckRow(
+                telugu: "వత్తులు",
+                name: "Conjunct signs",
+                subtitle: learned > 0 ? "\(learned) of \(total) vatthulu learned" : "\(total) vatthulu",
+                due: model.vatthuDueCount,
+                newCount: model.vatthuNewCount,
+                progressPct: learned * 100 / total)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Row linking a reference explorer (guninthalu, vatthulu) from its section.
+    private func chartRow(sample: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("క · కా · కి · కీ · కు …")
+                Text(sample)
                     .font(Theme.serif(17, weight: .semibold))
                     .foregroundStyle(Theme.textHeading)
-                Text("Every consonant × 16 vowel signs")
+                Text(subtitle)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }

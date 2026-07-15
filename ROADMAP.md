@@ -4,7 +4,7 @@ A planning reference for future work. Two parts:
 1. **Proposed features**, ordered by the product priority we agreed on.
 2. **Bugs & existing issues** worth fixing, ordered by severity.
 
-Last reviewed after the Aksharamala phase 1–3 build (Learn tab, script decks, guninthalu) and the global sound-toggle / Review-tab work.
+Last reviewed after the Aksharamala phase 4 build (vatthulu reference + drills) — phases 1–4 of the Learn tab are now shipped, along with TTS voice & speed customization.
 
 **Effort key:** S ≈ ½–1 day · M ≈ 2–4 days · L ≈ 1–2 weeks · XL ≈ multi-week / new target.
 
@@ -70,12 +70,12 @@ Last reviewed after the Aksharamala phase 1–3 build (Learn tab, script decks, 
 1. ✅ **Done — Reference charts** for vowels + consonants, tap-to-hear (M). Shipped as the Learn tab: collapsible chart sections (closed by default), tap-to-hear tiles, and a compact detail drawer (glyph, romanization, sound hint, varga) that stays minimal while hopping between letters.
 2. ✅ **Done — Flashcard decks** for vowels + consonants over SM-2, separate from vocab (M). Shuffled sessions (10 new/session), auto-pronounce on reveal, due/new pills on the Practice rows, Learn-tab badge for due letters, and the decks are also selectable from the Review tab's new deck picker.
 3. ✅ **Done — Guninthalu** reference + drills (M–L). All 36×16 forms are *generated* from a 16-row vowel-sign table (no hardcoded grid): a Guninthalu explorer (consonant picker → full గుణింతం chart with formation breakdowns) plus an SM-2 quiz over the 16 signs where each rep pairs the sign with a rotating consonant (క first, then consonants the learner has studied) so the pattern transfers.
-4. **Vatthulu** reference + drills (M–L). ← **next up**
-5. **Gamified lesson path** + mastery / progression + streak tie-in (L–XL).
+4. ✅ **Done — Vatthulu** reference + drills (M–L). All conjunct forms are *generated* (base + virama + consonant, no glyph table): a varga-grouped reference of all 36 vatthulu shown as their doubled forms (క్క) with formation breakdowns, shape notes, and tappable real example words, plus an SM-2 quiz over the **27 drillable vatthulu** — the 9 that barely occur in modern Telugu (ఖ ఙ ఝ ఠ ఢ ఫ హ క్ష ఱ) are chart-only, marked rare. Each quiz rep dresses the vatthu in a different real cluster from curated everyday words (త వత్తు rotates అత్త → పుస్తకం → రక్తం), and reveal pronounces the example word so the cluster is heard in context. Wired into the Review deck picker, a Practice row, and the Learn-tab due badge.
+5. **Gamified lesson path** + mastery / progression + streak tie-in (L–XL). ← **next up**
 
 **Files:** new `Views/Learn/`, `Models/Akshara.swift`, `Resources/aksharas.json`, extend `UserData` / `AppModel` for script mastery, reuse `Transliterator` / `SpeechService` / `SM2` / `DeckStackView`, add a tab in `RootView`.
 
-**As-built notes (phases 1–3):** script data lives in code (`Models/Akshara.swift`) rather than `aksharas.json`; SM-2 state lives in a separate local `aksharacards.json` (`AksharaStore`) — deliberately *outside* `UserData`, because the sign-in merge rebuilds `UserData` from the server and would wipe unknown fields. Script progress is therefore local-only for now (cloud sync would need backend support). Guninthalu quiz state is namespaced in the same store (`gunintha:<vowel>` keys).
+**As-built notes (phases 1–4):** script data lives in code (`Models/Akshara.swift`) rather than `aksharas.json`; SM-2 state lives in a separate local `aksharacards.json` (`AksharaStore`) — deliberately *outside* `UserData`, because the sign-in merge rebuilds `UserData` from the server and would wipe unknown fields. Script progress is therefore local-only for now (cloud sync would need backend support). Guninthalu and vatthulu quiz state are namespaced in the same store (`gunintha:<vowel>` / `vatthu:<letter>` keys).
 
 ### 3. Resume reading position (per-story bookmark)
 **Priority: high, low cost.** Reopening a story always restarts at the top — punishing for longer reads spread across sessions.

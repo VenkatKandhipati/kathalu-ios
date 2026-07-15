@@ -236,6 +236,10 @@ final class AppModel {
         rateScriptCard(key: Self.guninthaKey(sign), quality: quality)
     }
 
+    func rate(vatthu: Vatthu, quality: Int) {
+        rateScriptCard(key: Self.vatthuKey(vatthu), quality: quality)
+    }
+
     /// One SM-2 update for any script-deck key (letters, vowel signs, …).
     private func rateScriptCard(key: String, quality: Int) {
         var card = aksharaCards[key] ?? AksharaCard(letter: key)
@@ -271,6 +275,25 @@ final class AppModel {
         AksharaData.vowelSigns.filter { guninthaCard(for: $0)?.isNew ?? true }.count
     }
 
+    /// Vatthu cards share the store under their own namespace.
+    static func vatthuKey(_ vatthu: Vatthu) -> String { "vatthu:\(vatthu.letter)" }
+
+    func vatthuCard(for vatthu: Vatthu) -> AksharaCard? {
+        aksharaCards[Self.vatthuKey(vatthu)]
+    }
+
+    var vatthuDueCount: Int {
+        AksharaData.quizVatthulu.filter { vatthuCard(for: $0).map { !$0.isNew && $0.isDue } ?? false }.count
+    }
+
+    var vatthuLearnedCount: Int {
+        AksharaData.quizVatthulu.filter { (vatthuCard(for: $0)?.repetitions ?? 0) >= 2 }.count
+    }
+
+    var vatthuNewCount: Int {
+        AksharaData.quizVatthulu.filter { vatthuCard(for: $0)?.isNew ?? true }.count
+    }
+
     /// Consonants paired with sign cards in the guninthalu quiz: the learner's
     /// studied consonants once there are enough, else a starter set.
     var guninthaQuizPool: [Akshara] {
@@ -295,7 +318,7 @@ final class AppModel {
     }
 
     var aksharaDueTotal: Int {
-        AksharaDeck.allCases.reduce(0) { $0 + aksharaDueCount(for: $1) } + guninthaDueCount
+        AksharaDeck.allCases.reduce(0) { $0 + aksharaDueCount(for: $1) } + guninthaDueCount + vatthuDueCount
     }
 
     // MARK: Stats

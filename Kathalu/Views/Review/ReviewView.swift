@@ -6,7 +6,7 @@ struct ReviewView: View {
 
     /// What's being reviewed: story vocabulary or one of the script decks.
     enum DeckChoice: String, CaseIterable, Identifiable {
-        case words, vowels, consonants, guninthalu
+        case words, vowels, consonants, guninthalu, vatthulu
         var id: String { rawValue }
     }
 
@@ -30,6 +30,8 @@ struct ReviewView: View {
                     AksharaReviewView(deck: .consonants, embedded: true)
                 case .guninthalu:
                     GuninthaluReviewView(embedded: true)
+                case .vatthulu:
+                    VatthuluReviewView(embedded: true)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -108,6 +110,9 @@ struct ReviewView: View {
         case .guninthalu:
             name = "గుణింతాలు"
             due = model.guninthaDueCount
+        case .vatthulu:
+            name = "వత్తులు"
+            due = model.vatthuDueCount
         }
         return due > 0 ? "\(name) · \(due)" : name
     }
