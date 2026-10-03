@@ -63,6 +63,20 @@ enum Theme {
     }
 }
 
+extension View {
+    /// Caps content to a comfortable reading/interaction width and centers it,
+    /// so screens don't stretch edge-to-edge on iPad (long text lines, giant
+    /// grid tiles, oversized cards). A no-op on iPhone, whose width is already
+    /// below every sensible cap — so this can't regress the phone layout.
+    /// `alignment` positions content within the capped column (text stays
+    /// leading; cards/centered UI use `.center`).
+    func readableColumn(_ maxWidth: CGFloat = 700, alignment: Alignment = .leading) -> some View {
+        self
+            .frame(maxWidth: maxWidth, alignment: alignment)
+            .frame(maxWidth: .infinity)
+    }
+}
+
 private extension Color {
     init(hex: UInt32) {
         self.init(

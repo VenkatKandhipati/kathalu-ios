@@ -252,7 +252,7 @@ struct ReaderView: View {
                 .padding(.horizontal, 30)
                 .padding(.top, 26)
                 .padding(.bottom, 40)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .readableColumn()
                 .background(
                     GeometryReader { content in
                         Color.clear.preference(
@@ -304,7 +304,7 @@ struct ReaderView: View {
                     .padding(.horizontal, 30)
                     .padding(.top, 26)
                     .padding(.bottom, 30)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .readableColumn()
                 }
                 .tag(page.index)
             }
