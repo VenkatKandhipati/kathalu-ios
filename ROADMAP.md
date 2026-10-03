@@ -4,7 +4,7 @@ A planning reference for future work. Two parts:
 1. **Proposed features**, ordered by the product priority we agreed on.
 2. **Bugs & existing issues** worth fixing, ordered by severity.
 
-Last reviewed after the Aksharamala phase 4 build (vatthulu reference + drills) — phases 1–4 of the Learn tab are now shipped, along with TTS voice & speed customization.
+Last reviewed 28 Jul 2026 (iPad readable-layout pass + Apple Pencil writing practice queued as #12/#13; Journey scroll fixed via iOS 18 `ScrollPosition`). Earlier: the Journey design spike (cartoon-river prototypes, DEBUG-only under `Views/Learn/Prototypes/`). Shipped so far: the Learn tab with reference charts + SM-2 drills for vowels, consonants, guninthalu, and vatthulu (feature #2, phases 1–4); TTS voice & speed customization (feature #5); global sound toggle and the Review-tab deck picker. Next up: the Journey lesson path (#2 phase 5 — design locked, phased plan in that section); dictionary work (#1) queued behind it.
 
 **Effort key:** S ≈ ½–1 day · M ≈ 2–4 days · L ≈ 1–2 weeks · XL ≈ multi-week / new target.
 
@@ -33,7 +33,7 @@ Last reviewed after the Aksharamala phase 4 build (vatthulu reference + drills) 
 **Files:** new `Models/WordEntry.swift`, `Resources/dictionary.json`, `Services/DictionaryService.swift` (replaces/absorbs `TranslationService`), `WordSheetView`, `APIClient`/`SyncEngine` for the DB layer.
 
 ### 2. Aksharamala — learn the Telugu script (vowels, consonants, guninthalu, vatthulu)
-**Priority: high. Effort: XL — a whole new learning pillar.** Kathalu today assumes you can already read the script; it teaches *vocabulary in context*. A dedicated **Learn** section that teaches the writing system from the ground up opens the app to true beginners and gives existing readers a way to shore up gaps — especially guninthalu and vatthulu, which trip up most learners.
+**Priority: high. Effort: XL — a whole new learning pillar. Status: phases 1–4 shipped; only the gamified lesson path (phase 5) remains.** Kathalu today assumes you can already read the script; it teaches *vocabulary in context*. A dedicated **Learn** section that teaches the writing system from the ground up opens the app to true beginners and gives existing readers a way to shore up gaps — especially guninthalu and vatthulu, which trip up most learners.
 
 **The script, and what we'd cover**
 - **Vowels — అచ్చులు (achchulu):** the ~16 independent vowels (అ ఆ ఇ ఈ ఉ ఊ ఋ ఎ ఏ ఐ ఒ ఓ ఔ …), plus anusvara / visarga (ం ః).
@@ -51,10 +51,7 @@ Last reviewed after the Aksharamala phase 4 build (vatthulu reference + drills) 
 - **Guninthalu drills:** given a consonant + a target vowel, pick or produce the correct combined form; reinforces mātra application.
 - **Vatthulu drills:** recognize and assemble conjuncts.
 
-**Future: gamified lessons**
-- A structured **learn path** — ordered units (vowels → consonants → guninthalu → vatthulu), each a short lesson plus a mastery check that unlocks the next.
-- Per-akshara mastery tracking (SM-2 gives this for free), XP, and a tie-in to the existing streak so script practice also feeds the daily loop.
-- Optional "placement" so existing readers can skip ahead.
+**Gamified lessons — design decided.** A structured learn path — ordered units (vowels → consonants → guninthalu → vatthulu), each a short lesson plus a mastery check that unlocks the next. See **phase 5** below for the locked visual design and the phased implementation plan.
 
 **Heavy reuse — why the effort is leveraged, not from-scratch**
 - **`Transliterator`** already encodes the vowel / consonant / mātra / virama maps — essentially the seed data for the reference charts and the answer key for quizzes.
@@ -71,9 +68,70 @@ Last reviewed after the Aksharamala phase 4 build (vatthulu reference + drills) 
 2. ✅ **Done — Flashcard decks** for vowels + consonants over SM-2, separate from vocab (M). Shuffled sessions (10 new/session), auto-pronounce on reveal, due/new pills on the Practice rows, Learn-tab badge for due letters, and the decks are also selectable from the Review tab's new deck picker.
 3. ✅ **Done — Guninthalu** reference + drills (M–L). All 36×16 forms are *generated* from a 16-row vowel-sign table (no hardcoded grid): a Guninthalu explorer (consonant picker → full గుణింతం chart with formation breakdowns) plus an SM-2 quiz over the 16 signs where each rep pairs the sign with a rotating consonant (క first, then consonants the learner has studied) so the pattern transfers.
 4. ✅ **Done — Vatthulu** reference + drills (M–L). All conjunct forms are *generated* (base + virama + consonant, no glyph table): a varga-grouped reference of all 36 vatthulu shown as their doubled forms (క్క) with formation breakdowns, shape notes, and tappable real example words, plus an SM-2 quiz over the **27 drillable vatthulu** — the 9 that barely occur in modern Telugu (ఖ ఙ ఝ ఠ ఢ ఫ హ క్ష ఱ) are chart-only, marked rare. Each quiz rep dresses the vatthu in a different real cluster from curated everyday words (త వత్తు rotates అత్త → పుస్తకం → రక్తం), and reveal pronounces the example word so the cluster is heard in context. Wired into the Review deck picker, a Practice row, and the Learn-tab due badge.
-5. **Gamified lesson path** + mastery / progression + streak tie-in (L–XL). ← **next up**
+5. **Journey — gamified lesson path** (L–XL). ← **in progress; design locked 17 Jul 2026**
 
-**Files:** new `Views/Learn/`, `Models/Akshara.swift`, `Resources/aksharas.json`, extend `UserData` / `AppModel` for script mastery, reuse `Transliterator` / `SpeechService` / `SM2` / `DeckStackView`, add a tab in `RootView`.
+   **Design (prototyped in `Views/Learn/Prototypes/`, cartoon style chosen):** the journey
+   renders as a playful cartoon river — the Godavari — flowing **bottom-to-top**: the
+   traveler starts at the bottom of the map, completed stops sit beneath the boat, and the
+   unexplored course rises into a light morning mist above, ending at a sea band across the
+   top. **Villages** = lessons (a few letters each, letter glyph on the marker, letters
+   listed in a caption chip), **temples** = section checkpoints at real Godavari landmarks
+   (బాసర — where అక్షరాభ్యాసం happens → ధర్మపురి → భద్రాచలం → రాజమహేంద్రవరం → అంతర్వేది,
+   the sagara sangamam), **book markers** = "you can now read…" reading milestones.
+   Completed temples fly a red pennant; the current stop breathes with a START chip; locked
+   stops are warm sandstone, never gray. All geometry derives from one layout engine
+   (Catmull-Rom spline through seeded meandering stop positions — `RiverLayout`), rendered
+   in a spring-green palette tuned for text contrast in both light and dark mode.
+   **Learn-tab layout:** the tab defaults to the **Journey**; a top toggle switches to
+   **Explore** — today's LearnView content (practice deck rows + reference charts).
+
+   **Core rule: the journey is a guided front-end over the existing SM-2 ledger.** Lessons
+   feed `rate(...)` on the same `aksharaCards` keys the practice decks already use
+   (correct ≈ quality 4–5, wrong ≈ 2), and stop completion is *derived* from card state
+   wherever possible, so the Journey, the Review-tab decks, and the due badges can never
+   disagree. Path-only state (checkpoint passes, test-outs) lives in a new local
+   `pathprogress.json` beside `aksharacards.json` — deliberately outside `UserData` so the
+   sign-in rebuild can't wipe it.
+
+   **Phases — vowels first, validated as a real learning system before widening:**
+   - [x] **5a — Journey scaffold + Learn-tab layout (M).** _Built 17 Jul 2026._ Journey/Explore toggle (Journey
+     default; Explore hosts the existing LearnView content unchanged). Promote the cartoon
+     prototype into a real `JourneyView` driven by unit definitions in a new
+     `Models/LearnPath.swift` (generated from `AksharaData`, not hand-tabulated) plus a
+     `PathStore` for path-only state. Vowels section fully wired (4 villages + Basara);
+     later sections render locked upstream. Auto-scroll to the current stop; tapping the
+     current stop routes to its lesson.
+   - [x] **5b — Vowel lessons: the learning loop (M).** _Built 17 Jul 2026. As-built:
+     one SM-2 rating per letter per session (clean → 4, missed-but-recovered → 3;
+     checkpoint 5/2) so multiple exercises don't inflate intervals; listening exercises
+     drop out when sound is off._ New `LessonSessionView`: meet-it
+     intro cards for each new letter (big glyph, auto-pronounce, sound hint), then
+     multiple-choice exercises — *recognition* (glyph → pick the sound), *listening*
+     (hear it → pick the glyph), *reverse* (romanization → pick the glyph) — with wrong
+     answers requeued until cleared, haptic ticks + in-session combo, and an end-of-lesson
+     celebration (letters-learned recap with speak buttons, river path animating forward).
+     Results feed SM-2. The Basara checkpoint is a mixed no-hints quiz over all 16 vowels
+     (~80% to pass) that raises the temple pennant.
+   - [ ] **5c — Validate the loop before widening (S — gate). _Affordances built
+     (strengthen badge + practice sessions, auto-complete from existing SM-2 state);
+     the on-device tuning pass is the open gate._** Prove vowels actually
+     stick: completed stops surface SM-2 due state (a "strengthen" affordance on the map),
+     existing users' already-learned letters auto-complete their stops on first open
+     (`repetitions ≥ 2`), and session length / exercise mix / letters-per-lesson get tuned
+     from real on-device use. **Consonants don't start until this feels effective.**
+   - [ ] **5d — Consonants section (S–M).** Varga-based villages over the same machinery,
+     the first reading milestone (bare-consonant + vowel words mined from the story
+     corpus), and the Dharmapuri checkpoint.
+   - [ ] **5e — Guninthalu + vatthulu sections (M).** New *build-it* exercise type
+     (assemble consonant + sign → syllable; base + vatthu → cluster — distractors are
+     trivial since composite forms are generated), reading milestones mined via
+     `TeluguText`, Bhadrachalam + Rajahmundry checkpoints.
+   - [ ] **5f — Capstone & polish (S–M).** Antarvedi capstone deep-links into an easy
+     Library story; per-section placement/test-out (pass the checkpoint → section marked
+     complete, cards seeded as review); streak tie-in so lessons mark the reading day;
+     delete `Views/Learn/Prototypes/` and its LearnView debug row.
+
+**Files:** new `Views/Learn/`, `Models/Akshara.swift`, `Resources/aksharas.json`, extend `UserData` / `AppModel` for script mastery, reuse `Transliterator` / `SpeechService` / `SM2` / `DeckStackView`, add a tab in `RootView`. **Phase 5 adds:** `Views/Learn/Journey/` (JourneyView, river rendering promoted from the prototype, `LessonSessionView`), `Models/LearnPath.swift` (unit/section definitions), `PathStore` (in `LocalStore.swift`), Journey/Explore toggle in `LearnView`.
 
 **As-built notes (phases 1–4):** script data lives in code (`Models/Akshara.swift`) rather than `aksharas.json`; SM-2 state lives in a separate local `aksharacards.json` (`AksharaStore`) — deliberately *outside* `UserData`, because the sign-in merge rebuilds `UserData` from the server and would wipe unknown fields. Script progress is therefore local-only for now (cloud sync would need backend support). Guninthalu and vatthulu quiz state are namespaced in the same store (`gunintha:<vowel>` / `vatthu:<letter>` keys).
 
@@ -174,6 +232,32 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 **What:** Search by title/collection; group/filter by collection; add a `difficulty`/`level` field to `Story` + `stories.json`, with a filter and a level chip on spines.
 **Effort: M.** **Files:** `Story`, `stories.json`, `LibraryView`.
 
+### 12. iPad support & readable layout
+**Priority: medium — actively being tested on iPad.** The app is already universal (`TARGETED_DEVICE_FAMILY = "1,2"`) and runs on iPad, but every screen was laid out at phone width with **no size-class awareness**, so content stretches edge-to-edge: long Telugu reading lines, 4 giant chart tiles, oversized card stacks, a full-width segmented picker. No orientation lock, so landscape / Split View / Slide Over are all live too.
+
+**Done so far (28 Jul 2026).** Added a reusable `readableColumn(_:alignment:)` modifier in `Theme` — caps content to a comfortable width and centers it; a **no-op on iPhone** (phone width is already below the cap), so it can't regress the phone layout. Applied to `ReaderView` (scroll + paged text columns) and `LearnView` (Explore content + header/picker block). Deployment target was also bumped to **iOS 18** (for the Journey `ScrollPosition` fix).
+
+**Remaining — needs on-device eyeballing before blind-editing:**
+- Review card stacks (Story words + script decks) — wrap content in `readableColumn(520, .center)`; verify swipe gestures + the `GeometryReader` progress bars still behave.
+- Progress dashboard charts — cap width, or a two-column layout on the regular size class.
+- Journey river map — left full-bleed on purpose; decide whether to cap it (wide/sparse on iPad) or keep it.
+- Sheets present as centered form sheets with `.height()` detents on iPad — verify proportions.
+- Paged reader — pagination is computed at full width but text is now capped at 700, so pages may under-fill vertically. Minor.
+- Optional larger move: a `NavigationSplitView`/sidebar for the regular size class instead of the bottom `TabView`.
+
+**Effort: S–M (remaining).** **Files:** `Theme.swift` (done), `ReviewView`, `ProgressDashboardView`, `JourneyView`, per-screen wraps.
+
+### 13. Handwriting practice (Apple Pencil / touch)
+**Priority: medium — high learning value on iPad; fills feature #2 phase 5's reserved "Production" exercise slot.** Practice writing aksharas by hand — Apple Pencil on iPad, finger fallback elsewhere. The capture side is trivial; **grading** is where the difficulty lives, so phase it by difficulty:
+
+- **(a) Trace-over (easy — start here).** Render the target glyph faint underneath and trace on top with PencilKit; "grade" by stroke coverage against the glyph outline — no recognition needed. The best way to learn letterforms, especially guninthalu / vatthulu shapes.
+- **(b) Self-assessed freehand (easy).** Blank box → "write ఔ" → draw → reveal the reference → self-rate. Plugs **directly into the existing reveal-then-rate SM-2 flow** with almost no new machinery.
+- **(c) Automated recognition (hard — defer).** Actually classify the drawn glyph. Vision's handwriting recognition doesn't reliably cover Telugu, so this means training a Core ML classifier on Telugu handwriting datasets — real ML work, and accuracy across the 400+ *composite* forms is dubious. Those composites are exactly where tracing beats recognition, so this path buys the least. Research spike only if base vowels/consonants demand it.
+
+**Approach notes.** `PKCanvasView` wrapped in a thin `UIViewRepresentable` gives pressure-sensitive ink, undo, and a palette for free. Slot as a new `LessonExercise.Kind` in the Journey and surface it only when Pencil/iPad (or finger) is available.
+
+**Effort: (a)+(b) S–M · (c) L–XL.** **Files:** new PencilKit wrapper + writing-exercise view under `Views/Learn/Journey/`, `LessonSessionView` (new exercise kind), `Akshara` (glyph outline for coverage grading).
+
 ---
 
 ## Part 2 — Bugs & existing issues to fix
@@ -181,7 +265,7 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 ### High
 - **Sync status indicator is effectively frozen.** `AppModel.syncStatus` reads `sync.status`, but `SyncEngine` is a plain `final class` (not `@Observable`), so Observation doesn't track it — ProfileView's "Syncing… / Synced / Offline" pill never updates after first render. `SyncEngine.status` is also mutated from background `Task`s while read on the main actor (data race). Fix: route status through the `@MainActor @Observable` `AppModel`, updated on the main actor.
 
-- **~~`SpeechService` audio session is unconfigured.~~ ✅ Fixed.** Now sets the `.playback` category (`.spokenAudio` mode, `.duckOthers`) so pronunciation plays through the silent switch and ducks background audio, and falls back to the system default voice when `te-IN` isn't installed. _Remaining follow-on for feature #5: expose rate/voice as user settings._
+- **~~`SpeechService` audio session is unconfigured.~~ ✅ Fixed.** Now sets the `.playback` category (`.spokenAudio` mode, `.duckOthers`) so pronunciation plays through the silent switch and ducks background audio, and falls back to the system default voice when `te-IN` isn't installed. _The follow-on (user-facing rate/voice settings) shipped as feature #5._
 
 ### Medium
 - **Reading completion auto-fires and inflates stats.** `finishIfNeeded()` runs when a story fits on screen or on reaching the last page / 99% scroll, regardless of real reading — marking a reading day (streak++), incrementing `storiesRead`, and recording proficiency. Short stories can grant a streak on open. Gate on real dwell time (the new reading-timer accumulator is a natural signal) and/or scroll depth.
