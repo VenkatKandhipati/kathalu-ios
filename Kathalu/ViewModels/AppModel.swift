@@ -11,6 +11,8 @@ final class AppModel {
     var data: UserData
     /// Script-deck SM-2 state, keyed by letter (local-only, see AksharaStore).
     var aksharaCards: [String: AksharaCard]
+    /// Journey checkpoint state (local-only, see PathStore).
+    var pathProgress: PathProgress
 
     // MARK: Settings (mirrors the web app's theme / storyFontSize keys)
 
@@ -104,6 +106,7 @@ final class AppModel {
     let speech = SpeechService()
     private let localStore = LocalStore()
     private let aksharaStore = AksharaStore()
+    private let pathStore = PathStore()
     private let auth = AuthService()
     private let api: APIClient
     private let sync: SyncEngine
@@ -115,6 +118,7 @@ final class AppModel {
     init() {
         data = localStore.load()
         aksharaCards = aksharaStore.load()
+        pathProgress = pathStore.load()
         appearance = Appearance(rawValue: UserDefaults.standard.string(forKey: "appearance") ?? "") ?? .system
         fontSize = ReadingFontSize(rawValue: UserDefaults.standard.string(forKey: "storyFontSize") ?? "") ?? .medium
         readingMode = ReadingMode(rawValue: UserDefaults.standard.string(forKey: "readingMode") ?? "") ?? .scroll
@@ -319,6 +323,61 @@ final class AppModel {
 
     var aksharaDueTotal: Int {
         AksharaDeck.allCases.reduce(0) { $0 + aksharaDueCount(for: $1) } + guninthaDueCount + vatthuDueCount
+    }
+
+    // MARK: Journey (gamified lesson path)
+
+    /// A village is complete once every letter has been answered correctly at
+    /// least once — a finished lesson guarantees this, and existing users'
+    /// already-studied letters auto-complete their villages for free.
+    func unitComplete(_ unit: PathUnit) -> Bool {
+        !unit.aksharas.isEmpty
+            && unit.aksharas.allSatisfy { (aksharaCards[$0.letter]?.repetitions ?? 0) >= 1 }
+    }
+
+    /// Studied letters in the unit that are due again — the map's
+    /// "strengthen" signal on completed villages.
+    func unitDueCount(_ unit: PathUnit) -> Int {
+        unit.aksharas.filter { aksharaCards[$0.letter].map { !$0.isNew && $0.isDue } ?? false }.count
+    }
+
+    func stopComplete(_ stop: PathStop) -> Bool {
+        switch stop.kind {
+        case .village(let unit): return unitComplete(unit)
+        case .temple: return pathProgress.passedCheckpoints.contains(stop.id)
+        case .milestone: return false  // milestones become interactive in 5d
+        }
+    }
+
+    /// Map state for every stop: the first incomplete *built* stop is
+    /// current, everything after is locked (stops past the built sections
+    /// always are — see `LearnPath.builtSectionCount`).
+    var journeyStates: [String: JourneyStopState] {
+        var states: [String: JourneyStopState] = [:]
+        var currentAssigned = false
+        let builtIDs = Set(LearnPath.builtStops.map(\.id))
+        for stop in LearnPath.stops {
+            if stopComplete(stop) {
+                states[stop.id] = .done
+            } else if !currentAssigned && builtIDs.contains(stop.id) {
+                states[stop.id] = .current
+                currentAssigned = true
+            } else {
+                states[stop.id] = .locked
+            }
+        }
+        return states
+    }
+
+    /// Where the boat sits: the first incomplete stop overall, which is the
+    /// edge of built content once everything shipped is done.
+    var journeyCurrentIndex: Int {
+        LearnPath.stops.firstIndex { !stopComplete($0) } ?? LearnPath.stops.count - 1
+    }
+
+    func passCheckpoint(_ stopID: String) {
+        pathProgress.passedCheckpoints.insert(stopID)
+        pathStore.save(pathProgress)
     }
 
     // MARK: Stats

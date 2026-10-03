@@ -10,9 +10,16 @@ struct LearnView: View {
         var id: String { rawValue }
     }
 
+    /// Journey (the gamified river path, default) vs Explore (reference
+    /// charts + free-practice decks).
+    enum LearnMode: String, CaseIterable {
+        case journey, explore
+    }
+
     @State private var selected: AksharaSelection?
     @State private var showingDetail = false
     @State private var practice: PracticeSession?
+    @State private var learnMode: LearnMode = .journey
 
     // Reference charts start collapsed so Practice stays front and center.
     @State private var vowelsExpanded = false
@@ -22,10 +29,64 @@ struct LearnView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 12) {
                     header
-                        .padding(.bottom, 6)
+                    Picker("Learn mode", selection: $learnMode) {
+                        Text("Journey").tag(LearnMode.journey)
+                        Text("Explore").tag(LearnMode.explore)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(.horizontal, 22)
+                .padding(.bottom, 12)
+                .readableColumn()
+
+                switch learnMode {
+                case .journey:
+                    JourneyView()
+                case .explore:
+                    exploreContent
+                }
+            }
+            .background(Theme.background)
+            .fullScreenCover(item: $practice) { session in
+                switch session {
+                case .vowels: AksharaReviewView(deck: .vowels)
+                case .consonants: AksharaReviewView(deck: .consonants)
+                case .guninthalu: GuninthaluReviewView()
+                case .vatthulu: VatthuluReviewView()
+                }
+            }
+            .onAppear {
+                #if DEBUG
+                // Debug hook: `simctl launch … -openDeck vowels` starts a session.
+                if let raw = UserDefaults.standard.string(forKey: "openDeck"),
+                   let session = PracticeSession(rawValue: raw) {
+                    UserDefaults.standard.removeObject(forKey: "openDeck")
+                    practice = session
+                }
+                #endif
+            }
+            // Presented with a boolean (not `item:`) so switching letters
+            // updates the sheet in place instead of re-presenting it — an
+            // item change resets the detent and the sheet pops to full height.
+            .sheet(isPresented: $showingDetail, onDismiss: { selected = nil }) {
+                if let selected {
+                    AksharaDetailSheet(selection: selected)
+                        .presentationDetents([.height(300)])
+                        .presentationDragIndicator(.visible)
+                        // Keep the chart tappable underneath so learners can
+                        // browse letter to letter without dismissing the sheet.
+                        .presentationBackgroundInteraction(.enabled(upThrough: .height(300)))
+                }
+            }
+        }
+    }
+
+    private var exploreContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
                     Label(model.soundEnabled
                           ? "Tap any letter to hear it"
                           : "Sound is off — letters won't be spoken",
@@ -80,42 +141,30 @@ struct LearnView: View {
                         }
                         .buttonStyle(.plain)
                     }
-                }
-                .padding(.horizontal, 22)
-                .padding(.bottom, 24)
+
+                    #if DEBUG
+                    // Journey-tab design spike — see Prototypes/RiverPrototypeGallery.
+                    NavigationLink {
+                        RiverPrototypeGallery()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "water.waves")
+                            Text("River journey prototypes")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                        .padding(.top, 28)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    #endif
             }
-            .background(Theme.background)
-            .fullScreenCover(item: $practice) { session in
-                switch session {
-                case .vowels: AksharaReviewView(deck: .vowels)
-                case .consonants: AksharaReviewView(deck: .consonants)
-                case .guninthalu: GuninthaluReviewView()
-                case .vatthulu: VatthuluReviewView()
-                }
-            }
-            .onAppear {
-                #if DEBUG
-                // Debug hook: `simctl launch … -openDeck vowels` starts a session.
-                if let raw = UserDefaults.standard.string(forKey: "openDeck"),
-                   let session = PracticeSession(rawValue: raw) {
-                    UserDefaults.standard.removeObject(forKey: "openDeck")
-                    practice = session
-                }
-                #endif
-            }
-            // Presented with a boolean (not `item:`) so switching letters
-            // updates the sheet in place instead of re-presenting it — an
-            // item change resets the detent and the sheet pops to full height.
-            .sheet(isPresented: $showingDetail, onDismiss: { selected = nil }) {
-                if let selected {
-                    AksharaDetailSheet(selection: selected)
-                        .presentationDetents([.height(300)])
-                        .presentationDragIndicator(.visible)
-                        // Keep the chart tappable underneath so learners can
-                        // browse letter to letter without dismissing the sheet.
-                        .presentationBackgroundInteraction(.enabled(upThrough: .height(300)))
-                }
-            }
+            .padding(.horizontal, 22)
+            .padding(.bottom, 24)
+            .readableColumn()
         }
     }
 
