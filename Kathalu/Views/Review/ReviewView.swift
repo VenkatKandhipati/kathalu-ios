@@ -49,7 +49,17 @@ struct ReviewView: View {
                 }
             }
         }
-        .onAppear(perform: buildSessionIfNeeded)
+        .onAppear {
+            #if DEBUG
+            // Debug hook: `simctl launch … -openDeck vowels` selects a deck.
+            if let raw = UserDefaults.standard.string(forKey: "openDeck"),
+               let choice = DeckChoice(rawValue: raw) {
+                UserDefaults.standard.removeObject(forKey: "openDeck")
+                deckChoice = choice
+            }
+            #endif
+            buildSessionIfNeeded()
+        }
     }
 
     private var wordsContent: some View {

@@ -5,46 +5,37 @@ struct ProgressDashboardView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Progress")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(Theme.textHeading)
-                        Text("మీ ప్రగతి")
-                            .font(Theme.sans(14))
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                    .padding(.bottom, 24)
-
-                    heroRing
-                        .frame(maxWidth: .infinity)
-                        .padding(.bottom, 26)
-
-                    HStack(spacing: 11) {
-                        statTile(value: "\(model.data.streak)", label: "day streak", color: Theme.accent)
-                        statTile(value: "\(model.storiesRead)", label: "stories read", color: Theme.textHeading)
-                        statTile(value: "\(model.wordsKnown)", label: "words known", color: Theme.textHeading)
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                heroRing
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 10)
                     .padding(.bottom, 26)
 
-                    if !model.mostLookedUp.isEmpty {
-                        Text("MOST LOOKED-UP")
-                            .font(.system(size: 12, weight: .bold))
-                            .tracking(1.7)
-                            .foregroundStyle(Theme.textTertiary)
-                            .padding(.bottom, 6)
-                        ForEach(Array(model.mostLookedUp.enumerated()), id: \.element.word) { i, entry in
-                            wordRow(entry, divider: i < model.mostLookedUp.count - 1)
-                        }
+                HStack(spacing: 11) {
+                    statTile(value: "\(model.data.streak)", label: "day streak", color: Theme.accent)
+                    statTile(value: "\(model.storiesRead)", label: "stories read", color: Theme.textHeading)
+                    statTile(value: "\(model.wordsKnown)", label: "words known", color: Theme.textHeading)
+                }
+                .padding(.bottom, 26)
+
+                if !model.mostLookedUp.isEmpty {
+                    Text("MOST LOOKED-UP")
+                        .font(.system(size: 12, weight: .bold))
+                        .tracking(1.7)
+                        .foregroundStyle(Theme.textTertiary)
+                        .padding(.bottom, 6)
+                    ForEach(Array(model.mostLookedUp.enumerated()), id: \.element.word) { i, entry in
+                        wordRow(entry, divider: i < model.mostLookedUp.count - 1)
                     }
                 }
-                .padding(.horizontal, 22)
-                .padding(.bottom, 24)
             }
-            .background(Theme.background)
+            .padding(.horizontal, 22)
+            .padding(.bottom, 24)
         }
+        .background(Theme.background)
+        .navigationTitle("Progress")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var heroRing: some View {

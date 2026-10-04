@@ -4,16 +4,11 @@ import SwiftUI
 /// charts for the vowels (అచ్చులు) and consonants (హల్లులు).
 struct LearnView: View {
     @Environment(AppModel.self) private var model
-    /// The quiz decks launchable from the Practice section.
-    enum PracticeSession: String, Identifiable {
-        case vowels, consonants, guninthalu, vatthulu
-        var id: String { rawValue }
-    }
 
-    /// Journey (the gamified river path, default) vs Explore (reference
-    /// charts + free-practice decks).
+    /// The three Learn modes: the guided river path, the reference charts, and
+    /// handwriting practice. (SM-2 drills live in the Review tab.)
     enum LearnMode: String, CaseIterable {
-        case journey, explore
+        case journey, charts, write
     }
 
     /// Trace-over writing practice decks (base glyphs only for now).
@@ -26,12 +21,13 @@ struct LearnView: View {
         var telugu: String { self == .vowels ? "అచ్చులు" : "హల్లులు" }
         var titleEn: String { self == .vowels ? "Vowels" : "Consonants" }
         var sessionTitle: String { "\(telugu) · Write" }
+        var worksheetTitle: String { "\(telugu) · Worksheet" }
     }
 
     @State private var selected: AksharaSelection?
     @State private var showingDetail = false
-    @State private var practice: PracticeSession?
     @State private var writing: WritingSession?
+    @State private var worksheet: WritingSession?
     @State private var learnMode: LearnMode = .journey
 
     // Reference charts start collapsed so Practice stays front and center.
@@ -47,7 +43,8 @@ struct LearnView: View {
                     header
                     Picker("Learn mode", selection: $learnMode) {
                         Text("Journey").tag(LearnMode.journey)
-                        Text("Explore").tag(LearnMode.explore)
+                        Text("Charts").tag(LearnMode.charts)
+                        Text("Write").tag(LearnMode.write)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -58,31 +55,18 @@ struct LearnView: View {
                 switch learnMode {
                 case .journey:
                     JourneyView()
-                case .explore:
-                    exploreContent
+                case .charts:
+                    chartsContent
+                case .write:
+                    writeContent
                 }
             }
             .background(Theme.background)
-            .fullScreenCover(item: $practice) { session in
-                switch session {
-                case .vowels: AksharaReviewView(deck: .vowels)
-                case .consonants: AksharaReviewView(deck: .consonants)
-                case .guninthalu: GuninthaluReviewView()
-                case .vatthulu: VatthuluReviewView()
-                }
-            }
             .fullScreenCover(item: $writing) { session in
                 WritingPracticeView(title: session.sessionTitle, aksharas: session.aksharas)
             }
-            .onAppear {
-                #if DEBUG
-                // Debug hook: `simctl launch … -openDeck vowels` starts a session.
-                if let raw = UserDefaults.standard.string(forKey: "openDeck"),
-                   let session = PracticeSession(rawValue: raw) {
-                    UserDefaults.standard.removeObject(forKey: "openDeck")
-                    practice = session
-                }
-                #endif
+            .fullScreenCover(item: $worksheet) { session in
+                WorksheetView(title: session.worksheetTitle, aksharas: session.aksharas)
             }
             // Presented with a boolean (not `item:`) so switching letters
             // updates the sheet in place instead of re-presenting it — an
@@ -100,7 +84,7 @@ struct LearnView: View {
         }
     }
 
-    private var exploreContent: some View {
+    private var chartsContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                     Label(model.soundEnabled
@@ -110,22 +94,6 @@ struct LearnView: View {
                         .font(.system(size: 13))
                         .foregroundStyle(Theme.textSecondary)
                         .padding(.bottom, 24)
-
-                    sectionHeader("PRACTICE", telugu: "సాధన")
-                    VStack(spacing: 10) {
-                        deckButton(.vowels)
-                        deckButton(.consonants)
-                        guninthaButton
-                        vatthuButton
-                    }
-                    .padding(.bottom, 30)
-
-                    sectionHeader("WRITING", telugu: "రాయడం")
-                    VStack(spacing: 10) {
-                        writingRow(.vowels)
-                        writingRow(.consonants)
-                    }
-                    .padding(.bottom, 30)
 
                     collapsibleHeader("VOWELS", telugu: AksharaData.vowels.telugu, isExpanded: $vowelsExpanded)
                     if vowelsExpanded {
@@ -184,6 +152,35 @@ struct LearnView: View {
                     }
                     .buttonStyle(.plain)
                     #endif
+            }
+            .padding(.horizontal, 22)
+            .padding(.bottom, 24)
+            .readableColumn()
+        }
+    }
+
+    private var writeContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                Label("Trace letters with your finger or Apple Pencil",
+                      systemImage: "hand.draw")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+                    .padding(.bottom, 24)
+
+                sectionHeader("TRACE & CHECK", telugu: "సాధన")
+                VStack(spacing: 10) {
+                    writingRow(.vowels)
+                    writingRow(.consonants)
+                }
+                .padding(.bottom, 30)
+
+                sectionHeader("WORKSHEET", telugu: "అభ్యాస పత్రం")
+                VStack(spacing: 10) {
+                    worksheetRow(.vowels)
+                    worksheetRow(.consonants)
+                }
+                .padding(.bottom, 30)
             }
             .padding(.horizontal, 22)
             .padding(.bottom, 24)
@@ -265,23 +262,6 @@ struct LearnView: View {
         .padding(.bottom, 10)
     }
 
-    private func deckButton(_ deck: AksharaDeck) -> some View {
-        let total = deck.aksharas.count
-        let learned = model.aksharaLearnedCount(for: deck)
-        return Button {
-            practice = PracticeSession(rawValue: deck.rawValue)
-        } label: {
-            DeckRow(
-                telugu: deck.telugu,
-                name: deck.titleEn,
-                subtitle: learned > 0 ? "\(learned) of \(total) letters learned" : "\(total) letters",
-                due: model.aksharaDueCount(for: deck),
-                newCount: model.aksharaNewCount(for: deck),
-                progressPct: learned * 100 / total)
-        }
-        .buttonStyle(.plain)
-    }
-
     private func writingRow(_ session: WritingSession) -> some View {
         Button {
             writing = session
@@ -319,36 +299,39 @@ struct LearnView: View {
         .buttonStyle(.plain)
     }
 
-    private var guninthaButton: some View {
-        let total = AksharaData.vowelSigns.count
-        let learned = model.guninthaLearnedCount
-        return Button {
-            practice = .guninthalu
+    private func worksheetRow(_ session: WritingSession) -> some View {
+        Button {
+            worksheet = session
         } label: {
-            DeckRow(
-                telugu: "గుణింతాలు",
-                name: "Vowel signs",
-                subtitle: learned > 0 ? "\(learned) of \(total) signs learned" : "\(total) signs",
-                due: model.guninthaDueCount,
-                newCount: model.guninthaNewCount,
-                progressPct: learned * 100 / total)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var vatthuButton: some View {
-        let total = AksharaData.quizVatthulu.count
-        let learned = model.vatthuLearnedCount
-        return Button {
-            practice = .vatthulu
-        } label: {
-            DeckRow(
-                telugu: "వత్తులు",
-                name: "Conjunct signs",
-                subtitle: learned > 0 ? "\(learned) of \(total) vatthulu learned" : "\(total) vatthulu",
-                due: model.vatthuDueCount,
-                newCount: model.vatthuNewCount,
-                progressPct: learned * 100 / total)
+            HStack(spacing: 12) {
+                Image(systemName: "square.grid.2x2")
+                    .font(.system(size: 17))
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 7) {
+                        Text(session.telugu)
+                            .font(Theme.sans(16, weight: .semibold))
+                            .foregroundStyle(Theme.textHeading)
+                        Text(session.titleEn)
+                            .font(Theme.latinSerif(13))
+                            .italic()
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Text("Trace a few at a time, flip the page")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Theme.card)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.cardBorder))
         }
         .buttonStyle(.plain)
     }

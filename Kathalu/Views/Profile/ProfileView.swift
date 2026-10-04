@@ -20,6 +20,15 @@ struct ProfileView: View {
                 }
                 .listRowBackground(Theme.card)
 
+                Section {
+                    NavigationLink {
+                        ProgressDashboardView()
+                    } label: {
+                        settingLabel("Progress", systemImage: "chart.bar")
+                    }
+                }
+                .listRowBackground(Theme.card)
+
                 Section("Reading") {
                     Picker(selection: $model.appearance) {
                         ForEach(AppModel.Appearance.allCases) { Text($0.label).tag($0) }

@@ -29,12 +29,15 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 ### DEBUG launch hooks (simctl launch args)
 
 `-openTab <tab>` · `-openStory <idx>` · `-openDeck vowels|consonants|guninthalu|vatthulu`
-· `-ttsStress 1` (10k-utterance TTS loop for leak hunting).
+(selects a deck in the **Review** tab) · `-ttsStress 1` (10k-utterance TTS loop for leak hunting).
 
 ## Architecture — the rules that aren't obvious from the code
 
 - Single `@Observable @MainActor` **`AppModel`** injected via `.environment(AppModel.self)`;
-  views use `@Environment` + `@Bindable`. Tabs: Library / Learn / Review / Progress / Profile.
+  views use `@Environment` + `@Bindable`. Tabs: **Read** (LibraryView) / **Learn** / **Review**
+  / **Profile**. IA rule: **Learn = acquire** (its segments are Journey / Charts / Write — no
+  SRS drill decks), **Review = retain** (the single "due today" inbox: story vocab + the four
+  script decks). Progress is a pushed detail inside Profile, not a tab.
 - **`SM2.schedule` must match the FastAPI backend's math exactly** — don't touch scheduling;
   add metadata around it instead.
 - **Two persistence worlds, kept separate on purpose:**

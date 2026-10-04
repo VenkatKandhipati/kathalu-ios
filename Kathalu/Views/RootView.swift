@@ -43,28 +43,27 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             LibraryView()
-                .tabItem { Label("Library", systemImage: "books.vertical") }
+                .tabItem { Label("Read", systemImage: "books.vertical") }
                 .tag("library")
 
             LearnView()
                 .tabItem { Label("Learn", systemImage: "character.book.closed") }
-                .badge(model.aksharaDueTotal > 0 ? model.aksharaDueTotal : 0)
                 .tag("learn")
 
             ReviewView()
                 .tabItem { Label("Review", systemImage: "rectangle.on.rectangle") }
-                .badge(model.dueCount > 0 ? model.dueCount : 0)
+                // Review is the single "due today" inbox — story vocab + script.
+                .badge(reviewDue > 0 ? reviewDue : 0)
                 .tag("review")
-
-            ProgressDashboardView()
-                .tabItem { Label("Progress", systemImage: "chart.bar") }
-                .tag("progress")
 
             ProfileView()
                 .tabItem { Label("Profile", systemImage: "person.circle") }
                 .tag("profile")
         }
     }
+
+    /// Everything due for review today: story vocabulary plus script letters.
+    private var reviewDue: Int { model.dueCount + model.aksharaDueTotal }
 }
 
 #Preview {
