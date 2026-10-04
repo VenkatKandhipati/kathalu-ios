@@ -103,7 +103,9 @@ Last reviewed 28 Jul 2026 (iPad readable-layout pass + Apple Pencil writing prac
      current stop routes to its lesson.
    - [x] **5b — Vowel lessons: the learning loop (M).** _Built 17 Jul 2026. As-built:
      one SM-2 rating per letter per session (clean → 4, missed-but-recovered → 3;
-     checkpoint 5/2) so multiple exercises don't inflate intervals; listening exercises
+     checkpoint 5/3 — a checkpoint miss stays at 3 rather than resetting the letter,
+     so a single wrong answer can't un-complete its village and bounce the boat back)
+     so multiple exercises don't inflate intervals; listening exercises
      drop out when sound is off._ New `LessonSessionView`: meet-it
      intro cards for each new letter (big glyph, auto-pronounce, sound hint), then
      multiple-choice exercises — *recognition* (glyph → pick the sound), *listening*

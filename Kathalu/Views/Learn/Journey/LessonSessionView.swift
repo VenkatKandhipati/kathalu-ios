@@ -5,8 +5,10 @@ import SwiftUI
 ///
 /// Exercises are multiple-choice and feed the same SM-2 ledger as the
 /// free-practice decks — one rating per letter at session end (perfect → 4,
-/// missed-but-recovered → 3; checkpoints rate 5/2 since they're no-hint
-/// recall). Wrong answers requeue the letter with a different exercise type
+/// missed-but-recovered → 3; checkpoints rate 5/3 — a checkpoint miss stays
+/// at 3 rather than resetting the letter, so a single wrong answer can't
+/// un-complete its village and bounce the boat back). Wrong answers requeue
+/// the letter with a different exercise type
 /// until it's cleared (checkpoints score instead of requeueing).
 struct LessonSessionView: View {
     enum Mode {
@@ -207,7 +209,12 @@ struct LessonSessionView: View {
             }
         case .checkpoint(let section):
             for letter in practiced {
-                model.rate(akshara: letter, quality: missed.contains(letter.letter) ? 2 : 5)
+                // Misses rate 3, not <3: a sub-3 quality resets SM-2
+                // repetitions to 0, which would un-complete the letter's
+                // village and bounce the boat backward even on a pass. 3 keeps
+                // the village complete but schedules the letter due soon, so it
+                // surfaces as a ⚡ strengthen prompt on the map instead.
+                model.rate(akshara: letter, quality: missed.contains(letter.letter) ? 3 : 5)
             }
             if checkpointPassed, let temple = LearnPath.templeStop(in: section) {
                 model.passCheckpoint(temple.id)
@@ -576,7 +583,13 @@ struct LessonSessionView: View {
     }
 
     private func checkpointSummary(_ section: PathSection) -> some View {
-        VStack(spacing: 10) {
+        let templeName: String = {
+            if let temple = LearnPath.templeStop(in: section),
+               case .temple(_, let name, _) = temple.kind { return name }
+            return "the checkpoint"
+        }()
+        let needed = Int((Double(steps.count) * 0.8).rounded(.up))
+        return VStack(spacing: 10) {
             Image(systemName: checkpointPassed ? "flag.fill" : "flag")
                 .font(.system(size: 52))
                 .foregroundStyle(checkpointPassed ? Theme.accent : Theme.textTertiary)
@@ -586,17 +599,25 @@ struct LessonSessionView: View {
                 .foregroundStyle(Theme.textHeading)
             Text(checkpointPassed
                  ? "The pennant is raised — \(correctCount) of \(steps.count) right. The river flows on."
-                 : "\(correctCount) of \(steps.count) — you need \(Int((Double(steps.count) * 0.8).rounded(.up))) to raise the pennant.")
+                 : "You got \(correctCount) of \(steps.count) right — \(needed) are needed to raise the pennant.")
                 .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
             if !missed.isEmpty {
-                Text("Worth another look:")
+                Text(checkpointPassed ? "Saved for extra practice:" : "Worth another look:")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.top, 12)
                 letterChips(practiced.filter { missed.contains($0.letter) })
+                Text(checkpointPassed
+                     ? "You passed, so these are just marked for a quick refresh — tap a glowing ⚡ village on the map whenever you like."
+                     : "Practice these first — tap the glowing ⚡ villages on the map — then come back and try \(templeName) again.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 34)
+                    .padding(.top, 10)
             }
             if checkpointPassed {
                 Button {
