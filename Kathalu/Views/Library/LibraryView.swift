@@ -188,39 +188,78 @@ struct BookshelfView: View {
     let progress: [Int: StoryProgressEntry]
     let onSelect: (Story) -> Void
 
+    @Environment(\.horizontalSizeClass) private var hSize
+
     private let spineHeights: [CGFloat] = [150, 172, 158, 176, 152, 166]
+    private let baseSpineWidth: CGFloat = 48
+    private let baseSpacing: CGFloat = 10
     private let sideInset: CGFloat = 22
     @State private var appeared = false
 
+    /// Books are scaled up on iPad so the shelf feels substantial instead of
+    /// huddling in a corner; iPhone keeps the original 1× proportions.
+    private var scale: CGFloat { hSize == .regular ? 1.4 : 1 }
+
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            VStack(spacing: 0) {
-                HStack(alignment: .bottom, spacing: 10) {
-                    ForEach(Array(stories.enumerated()), id: \.element.id) { idx, story in
-                        Button {
-                            onSelect(story)
-                        } label: {
-                            BookSpineView(
-                                story: story,
-                                height: spineHeights[story.index % spineHeights.count],
-                                bestPct: progress[story.index]?.bestPct)
-                        }
-                        .buttonStyle(BookSpineButtonStyle())
-                        .scaleEffect(appeared ? 1 : 0.72, anchor: .bottom)
-                        .opacity(appeared ? 1 : 0)
-                        .animation(
-                            .spring(response: 0.55, dampingFraction: 0.7)
-                                .delay(Double(idx) * 0.07),
-                            value: appeared)
+        Group {
+            if hSize == .regular {
+                // Centered on iPad: `minWidth: viewport` centers the shelf when
+                // it fits and still scrolls if the library outgrows the width.
+                GeometryReader { geo in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        shelf
+                            .frame(minWidth: geo.size.width)
                     }
                 }
-                .padding(.horizontal, sideInset)
-                .padding(.top, 16)
-
-                shelfPlank
+                .frame(height: shelfHeight)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    shelf
+                }
             }
         }
         .onAppear { appeared = true }
+    }
+
+    private var shelf: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .bottom, spacing: baseSpacing * scale) {
+                ForEach(Array(stories.enumerated()), id: \.element.id) { idx, story in
+                    Button {
+                        onSelect(story)
+                    } label: {
+                        BookSpineView(
+                            story: story,
+                            height: spineHeights[story.index % spineHeights.count] * scale,
+                            bestPct: progress[story.index]?.bestPct,
+                            scale: scale)
+                    }
+                    .buttonStyle(BookSpineButtonStyle())
+                    .scaleEffect(appeared ? 1 : 0.72, anchor: .bottom)
+                    .opacity(appeared ? 1 : 0)
+                    .animation(
+                        .spring(response: 0.55, dampingFraction: 0.7)
+                            .delay(Double(idx) * 0.07),
+                        value: appeared)
+                }
+            }
+            .padding(.horizontal, sideInset)
+            .padding(.top, 16)
+
+            shelfPlank
+        }
+    }
+
+    /// Natural width of the books row (spines + spacing + side insets). Giving
+    /// the plank an explicit width keeps the shelf a definite size, so the
+    /// `minWidth` centering can't balloon the plank to full width.
+    private var booksRowWidth: CGFloat {
+        let n = CGFloat(stories.count)
+        return n * baseSpineWidth * scale + max(0, n - 1) * baseSpacing * scale + sideInset * 2
+    }
+
+    private var shelfHeight: CGFloat {
+        (spineHeights.max() ?? 176) * scale + 16 + 14 * scale + 16
     }
 
     /// Wooden shelf plank with a lit top edge and a soft cast shadow.
@@ -229,7 +268,7 @@ struct BookshelfView: View {
             colors: [Color(red: 0.74, green: 0.60, blue: 0.39),
                      Color(red: 0.53, green: 0.40, blue: 0.20)],
             startPoint: .top, endPoint: .bottom)
-            .frame(height: 14)
+            .frame(width: booksRowWidth - 24, height: 14 * scale)
             .overlay(alignment: .top) {
                 LinearGradient(colors: [.white.opacity(0.35), .clear],
                                startPoint: .top, endPoint: .bottom)
@@ -237,7 +276,6 @@ struct BookshelfView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 3))
             .shadow(color: .black.opacity(0.28), radius: 7, y: 6)
-            .padding(.horizontal, sideInset - 10)
     }
 }
 
@@ -255,8 +293,9 @@ struct BookSpineView: View {
     let story: Story
     let height: CGFloat
     let bestPct: Int?
+    var scale: CGFloat = 1
 
-    private let width: CGFloat = 48
+    private var width: CGFloat { 48 * scale }
 
     var body: some View {
         ZStack {
@@ -265,12 +304,12 @@ struct BookSpineView: View {
                 .overlay(alignment: .leading) {
                     LinearGradient(colors: [.white.opacity(0.22), .clear],
                                    startPoint: .leading, endPoint: .trailing)
-                        .frame(width: 7)
+                        .frame(width: 7 * scale)
                 }
                 .overlay(alignment: .trailing) {
                     LinearGradient(colors: [.clear, .black.opacity(0.20)],
                                    startPoint: .leading, endPoint: .trailing)
-                        .frame(width: 9)
+                        .frame(width: 9 * scale)
                 }
                 .overlay(alignment: .top) {
                     Rectangle().fill(.white.opacity(0.16)).frame(height: 2)
@@ -278,19 +317,19 @@ struct BookSpineView: View {
 
             // Rotated title: length constrained to the spine so it never overflows.
             Text(story.titleEn)
-                .font(Theme.latinSerif(11.5, weight: .semibold))
+                .font(Theme.latinSerif(11.5 * scale, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.97))
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.6)
-                .frame(width: height - 50, height: width - 8)
+                .frame(width: height - 50 * scale, height: width - 8 * scale)
                 .rotationEffect(.degrees(-90))
-                .offset(y: -14)
+                .offset(y: -14 * scale)
 
             // Bottom emblem: reading-progress ring, or a small flourish.
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
-                emblem.padding(.bottom, 11)
+                emblem.padding(.bottom, 11 * scale)
             }
         }
         .frame(width: width, height: height)
@@ -303,14 +342,14 @@ struct BookSpineView: View {
     @ViewBuilder
     private var emblem: some View {
         if let pct = bestPct {
-            ProficiencyRing(pct: pct, size: 22, lineWidth: 3)
-                .padding(4)
+            ProficiencyRing(pct: pct, size: 22 * scale, lineWidth: 3 * scale)
+                .padding(4 * scale)
                 .background(Circle().fill(.black.opacity(0.22)))
         } else {
             Image(systemName: "sparkle")
-                .font(.system(size: 10))
+                .font(.system(size: 10 * scale))
                 .foregroundStyle(.white.opacity(0.5))
-                .padding(.bottom, 2)
+                .padding(.bottom, 2 * scale)
         }
     }
 }

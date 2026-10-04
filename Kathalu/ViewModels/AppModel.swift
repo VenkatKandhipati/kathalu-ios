@@ -30,14 +30,24 @@ final class AppModel {
     }
 
     enum ReadingFontSize: String, CaseIterable, Identifiable {
-        case small, medium, large
+        case small, medium, large, extraLarge, extraExtraLarge
         var id: String { rawValue }
-        var label: String { rawValue.capitalized }
+        var label: String {
+            switch self {
+            case .small: return "Small"
+            case .medium: return "Medium"
+            case .large: return "Large"
+            case .extraLarge: return "Extra Large"
+            case .extraExtraLarge: return "Extra Extra Large"
+            }
+        }
         var points: CGFloat {
             switch self {
             case .small: return 19
             case .medium: return 22
             case .large: return 26
+            case .extraLarge: return 30
+            case .extraExtraLarge: return 34
             }
         }
     }
@@ -100,6 +110,12 @@ final class AppModel {
     var hasSeenSoundTip: Bool {
         didSet { UserDefaults.standard.set(hasSeenSoundTip, forKey: "hasSeenSoundTip") }
     }
+
+    /// False when no Telugu TTS voice is installed on the device. Without one,
+    /// iOS falls back to a non-Telugu voice that can't pronounce the script, so
+    /// pronunciation is silent — the UI prompts the user to add one in iOS
+    /// Settings (the app can't install voices itself).
+    var teluguVoiceInstalled: Bool { !SpeechService.teluguVoices.isEmpty }
 
     // MARK: Services
 

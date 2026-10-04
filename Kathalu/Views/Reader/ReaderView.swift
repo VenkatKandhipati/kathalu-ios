@@ -22,6 +22,10 @@ struct ReaderView: View {
     @State private var showSoundTip = false
     /// Voice & speed settings sheet, reachable from the "Aa" menu.
     @State private var showSpeechSettings = false
+    /// One-time-per-session prompt when a word is tapped but no Telugu voice is
+    /// installed, so pronunciation fails silently.
+    @State private var showNoVoiceAlert = false
+    @State private var warnedNoVoice = false
     /// Reading time banked from completed (active) segments this session.
     @State private var timerAccumulated: TimeInterval = 0
     /// Start of the current active segment; nil while paused (backgrounded).
@@ -54,6 +58,12 @@ struct ReaderView: View {
                 SpeechSettingsView()
             }
             .presentationDetents([.medium, .large])
+        }
+        .alert("No Telugu voice installed", isPresented: $showNoVoiceAlert) {
+            Button("Voice & speed") { showSpeechSettings = true }
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("To hear words spoken, add a Telugu voice in the iOS Settings app → Accessibility → Spoken Content → Voices → Telugu, then return to Kathalu.")
         }
         .onAppear {
             resumeTimer()
@@ -395,7 +405,16 @@ struct ReaderView: View {
             revealedTokens.insert(token.id)
             tappedWords.insert(word)
             model.recordLookup(word: word, storyIdx: story.index)
-            if model.soundEnabled { model.speech.speak(word) }
+            if model.soundEnabled {
+                if model.teluguVoiceInstalled {
+                    model.speech.speak(word)
+                } else if !warnedNoVoice {
+                    // Pronunciation would be silent without a voice — tell the
+                    // user how to add one, once per reading session.
+                    warnedNoVoice = true
+                    showNoVoiceAlert = true
+                }
+            }
         }
     }
 

@@ -13,6 +13,26 @@ struct SpeechSettingsView: View {
     var body: some View {
         @Bindable var model = model
         List {
+            if voices.isEmpty {
+                Section {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(.orange)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("No Telugu voice installed")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(Theme.textHeading)
+                            Text("Words can't be spoken until you add one. Open the iOS Settings app → Accessibility → Spoken Content → Voices → Telugu and download a voice — it will appear below.")
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                .listRowBackground(Theme.card)
+            }
+
             Section {
                 Toggle(isOn: $model.soundEnabled) {
                     settingLabel("Pronounce words on tap", systemImage: "speaker.wave.2")
