@@ -260,6 +260,15 @@ final class AppModel {
         rateScriptCard(key: Self.vatthuKey(vatthu), quality: quality)
     }
 
+    /// Writing (tracing) practice is scheduled under its own `write:` namespace
+    /// so production mastery never mixes with the recognition decks above —
+    /// tracing a glyph well doesn't mean you can read it, and vice versa.
+    func rate(writing akshara: Akshara, quality: Int) {
+        rateScriptCard(key: Self.writingKey(akshara), quality: quality)
+    }
+
+    static func writingKey(_ akshara: Akshara) -> String { "write:\(akshara.letter)" }
+
     /// One SM-2 update for any script-deck key (letters, vowel signs, …).
     private func rateScriptCard(key: String, quality: Int) {
         var card = aksharaCards[key] ?? AksharaCard(letter: key)

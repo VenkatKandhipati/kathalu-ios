@@ -16,9 +16,22 @@ struct LearnView: View {
         case journey, explore
     }
 
+    /// Trace-over writing practice decks (base glyphs only for now).
+    enum WritingSession: String, Identifiable {
+        case vowels, consonants
+        var id: String { rawValue }
+        var aksharas: [Akshara] {
+            self == .vowels ? AksharaData.vowels.aksharas : AksharaData.consonants
+        }
+        var telugu: String { self == .vowels ? "అచ్చులు" : "హల్లులు" }
+        var titleEn: String { self == .vowels ? "Vowels" : "Consonants" }
+        var sessionTitle: String { "\(telugu) · Write" }
+    }
+
     @State private var selected: AksharaSelection?
     @State private var showingDetail = false
     @State private var practice: PracticeSession?
+    @State private var writing: WritingSession?
     @State private var learnMode: LearnMode = .journey
 
     // Reference charts start collapsed so Practice stays front and center.
@@ -57,6 +70,9 @@ struct LearnView: View {
                 case .guninthalu: GuninthaluReviewView()
                 case .vatthulu: VatthuluReviewView()
                 }
+            }
+            .fullScreenCover(item: $writing) { session in
+                WritingPracticeView(title: session.sessionTitle, aksharas: session.aksharas)
             }
             .onAppear {
                 #if DEBUG
@@ -101,6 +117,13 @@ struct LearnView: View {
                         deckButton(.consonants)
                         guninthaButton
                         vatthuButton
+                    }
+                    .padding(.bottom, 30)
+
+                    sectionHeader("WRITING", telugu: "రాయడం")
+                    VStack(spacing: 10) {
+                        writingRow(.vowels)
+                        writingRow(.consonants)
                     }
                     .padding(.bottom, 30)
 
@@ -255,6 +278,43 @@ struct LearnView: View {
                 due: model.aksharaDueCount(for: deck),
                 newCount: model.aksharaNewCount(for: deck),
                 progressPct: learned * 100 / total)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func writingRow(_ session: WritingSession) -> some View {
+        Button {
+            writing = session
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "hand.draw")
+                    .font(.system(size: 17))
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 7) {
+                        Text(session.telugu)
+                            .font(Theme.sans(16, weight: .semibold))
+                            .foregroundStyle(Theme.textHeading)
+                        Text(session.titleEn)
+                            .font(Theme.latinSerif(13))
+                            .italic()
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Text("Trace \(session.aksharas.count) letters with your finger or Pencil")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Theme.card)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.cardBorder))
         }
         .buttonStyle(.plain)
     }
