@@ -45,6 +45,14 @@ struct JourneyView: View {
             .onAppear {
                 positionForCurrentStop(layout: layout, viewportHeight: geo.size.height)
             }
+            // On rotation the width (and so the whole river layout + content
+            // height) changes; re-anchor to the current stop without replaying
+            // the flyover, so the scroll offset stays valid against the new
+            // content size instead of pointing into empty space.
+            .onChange(of: geo.size) { _, _ in
+                suppressNextFlyover = true
+                positionForCurrentStop(layout: layout, viewportHeight: geo.size.height)
+            }
         }
         .background(JourneyPalette.meadowBottom)
         .fullScreenCover(item: $session) { session in

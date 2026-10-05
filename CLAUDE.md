@@ -18,9 +18,13 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 
 (That UDID is the local iPhone 17 Pro simulator.)
 
-- **Compile-check only by default.** The user tests behavior on their own device and
-  reports back — don't install/launch on the simulator unless the task specifically
-  needs runtime observation (e.g. memory sampling) or they ask.
+- **Compile-check only by default. Never launch or screenshot the simulator to see how
+  something looks without asking first.** The user tests behavior/appearance on their own
+  device and sends screenshots — that's the preferred way to check UI. `xcodebuild … build`
+  (compile check) is always fine; installing, launching, or screenshotting a simulator is
+  not. If you genuinely think you need to run it yourself (e.g. memory sampling, reproducing
+  a runtime crash), **ask first and list exactly what you'd check** so the user can decide
+  whether to just send screenshots instead.
 - The project uses `PBXFileSystemSynchronizedRootGroup` (objectVersion 77): new files
   anywhere under `Kathalu/` join the target automatically — never edit `project.pbxproj`
   to add files.
