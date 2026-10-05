@@ -41,24 +41,27 @@ struct MainTabView: View {
     }
 
     var body: some View {
+        // iOS 18 `Tab` API (not the bridged `.tabItem` form): the old API's
+        // iPad bridge mis-resizes tab content on rotation, leaving part of the
+        // screen black until relaunch.
         TabView(selection: $selectedTab) {
-            LibraryView()
-                .tabItem { Label("Read", systemImage: "books.vertical") }
-                .tag("library")
+            Tab("Read", systemImage: "books.vertical", value: "library") {
+                LibraryView()
+            }
 
-            LearnView()
-                .tabItem { Label("Learn", systemImage: "character.book.closed") }
-                .tag("learn")
+            Tab("Learn", systemImage: "character.book.closed", value: "learn") {
+                LearnView()
+            }
 
-            ReviewView()
-                .tabItem { Label("Review", systemImage: "rectangle.on.rectangle") }
-                // Review is the single "due today" inbox — story vocab + script.
-                .badge(reviewDue > 0 ? reviewDue : 0)
-                .tag("review")
+            // Review is the single "due today" inbox — story vocab + script.
+            Tab("Review", systemImage: "rectangle.on.rectangle", value: "review") {
+                ReviewView()
+            }
+            .badge(reviewDue > 0 ? reviewDue : 0)
 
-            ProfileView()
-                .tabItem { Label("Profile", systemImage: "person.circle") }
-                .tag("profile")
+            Tab("Profile", systemImage: "person.circle", value: "profile") {
+                ProfileView()
+            }
         }
     }
 
