@@ -1,5 +1,22 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
+
+/// Tapping the Lock Screen word shows another one (instead of opening the
+/// story, which the Home Screen sizes still do). The widget reloads after
+/// `perform`, and the provider folds the tap count into the pick.
+struct NextWordIntent: AppIntent {
+    static var title: LocalizedStringResource { "Show another word" }
+    // Nothing sensitive, so it runs straight from the Lock Screen without unlocking.
+    static var authenticationPolicy: IntentAuthenticationPolicy { .alwaysAllowed }
+
+    func perform() async throws -> some IntentResult {
+        let defaults = WidgetShared.defaults
+        let taps = defaults?.integer(forKey: WidgetShared.Key.lockWordTaps) ?? 0
+        defaults?.set(taps + 1, forKey: WidgetShared.Key.lockWordTaps)
+        return .result()
+    }
+}
 
 struct WordEntry: TimelineEntry {
     let date: Date
@@ -18,20 +35,27 @@ struct WordProvider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: WordWidgetConfig, in context: Context) async -> WordEntry {
-        entry(at: .now, config: configuration)
+        entry(at: .now, config: configuration, family: context.family)
     }
 
     /// A new word every hour over the next half-day. Each pick is fixed by its
     /// slot, so reloads don't reshuffle the word on screen.
     func timeline(for configuration: WordWidgetConfig, in context: Context) async -> Timeline<WordEntry> {
         let dates = SlotPicker.entryDates(from: .now, hours: Self.slotHours, count: 12)
-        return Timeline(entries: dates.map { entry(at: $0, config: configuration) }, policy: .atEnd)
+        return Timeline(entries: dates.map { entry(at: $0, config: configuration, family: context.family) },
+                        policy: .atEnd)
     }
 
-    private func entry(at date: Date, config: WordWidgetConfig) -> WordEntry {
+    private func entry(at date: Date, config: WordWidgetConfig, family: WidgetFamily) -> WordEntry {
         let pool = WidgetData.wordPool
         let slot = SlotPicker.slot(for: date, hours: Self.slotHours)
-        let pick = pool.isEmpty ? nil : pool[SlotPicker.index(slot: slot, salt: 0xA11CE, count: pool.count)]
+        // Each Lock Screen tap shifts the salt, so the pick changes while staying
+        // stable across ordinary reloads. Home Screen sizes ignore the taps.
+        let taps = family == .accessoryRectangular
+            ? max(0, WidgetShared.defaults?.integer(forKey: WidgetShared.Key.lockWordTaps) ?? 0)
+            : 0
+        let salt: UInt64 = 0xA11CE &+ UInt64(taps)
+        let pick = pool.isEmpty ? nil : pool[SlotPicker.index(slot: slot, salt: salt, count: pool.count)]
         return WordEntry(date: date, pick: pick, showRomanization: !config.hideRomanization)
     }
 }
@@ -50,19 +74,24 @@ struct WordWidgetView: View {
         if family == .accessoryRectangular {
             // Lock Screen: the system renders it monochrome, so no custom
             // colors. The slot's size is fixed — scale the text up to fill it.
-            VStack(alignment: .leading, spacing: 0) {
-                Text(entry.word)
-                    .font(WidgetPalette.telugu(34).weight(.bold))
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-                if entry.showRomanization {
-                    Text(entry.trans)
-                        .font(.system(size: 17, weight: .medium, design: .serif))
-                        .minimumScaleFactor(0.6)
+            // The whole widget is a button: tap for another word.
+            Button(intent: NextWordIntent()) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(entry.word)
+                        .font(WidgetPalette.telugu(34).weight(.bold))
+                        .minimumScaleFactor(0.5)
                         .lineLimit(1)
+                    if entry.showRomanization {
+                        Text(entry.trans)
+                            .font(.system(size: 17, weight: .medium, design: .serif))
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .buttonStyle(.plain)
         } else {
             let medium = family == .systemMedium
             VStack(spacing: medium ? 8 : 5) {

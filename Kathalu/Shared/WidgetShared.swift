@@ -31,6 +31,8 @@ enum WidgetShared {
         static let flashcards = "flashcards"
         static let flashPosition = "flashPosition"
         static let flashRevealed = "flashRevealed"
+        /// `Int` taps on the Lock Screen word (widget-owned); each one picks another word.
+        static let lockWordTaps = "lockWordTaps"
     }
 
     /// `kathalu://` deep links, routed by `AppModel.handleDeepLink`.

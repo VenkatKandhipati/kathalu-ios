@@ -195,7 +195,7 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 | Widget | Sizes | What it shows · tap opens |
 |---|---|---|
 | **Reading Streak** | small, medium, lock-screen circular + inline | flame + day count + read-today; **medium adds the Mon → Sun week strip** (future days dimmed; the Read tab's strip matches) · today's story |
-| **Word to Read** | small, medium, **lock-screen rectangular** | a new story word **every hour**; *Hide romanization* toggle, off by default (romanization shows) · the word's story |
+| **Word to Read** | small, medium, **lock-screen rectangular** | a new story word **every hour**; *Hide romanization* toggle, off by default (romanization shows) · the word's story (**Lock Screen: tap shows another word**, no unlock needed) |
 | **Today's Story** | small, medium | story of the day on the hero-card gradient; medium adds your best-score ring · that story |
 | **Letter of the Day** | small, medium | one akshara a day, walking the alphabet; medium adds sound hint + varga · Charts, letter drawer open |
 | **Sentence to Read** | medium, large | a full sentence every 6 h (124 usable from the corpus) in large type, no story caption; *Hide romanization* toggle, off by default · the sentence's story |
