@@ -11,7 +11,7 @@ struct SentenceProvider: AppIntentTimelineProvider {
     private static let slotHours = 6
 
     func placeholder(in context: Context) -> SentenceEntry {
-        SentenceEntry(date: .now, pick: WidgetData.sentencePool.first, showRomanization: false)
+        SentenceEntry(date: .now, pick: WidgetData.sentencePool.first, showRomanization: true)
     }
 
     func snapshot(for configuration: SentenceWidgetConfig, in context: Context) async -> SentenceEntry {
@@ -39,22 +39,27 @@ struct SentenceWidgetView: View {
     private var large: Bool { family == .systemLarge }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: large ? 12 : 6) {
+        VStack(alignment: .leading, spacing: 0) {
             WidgetCaption(text: "Sentence to read")
-            Text(entry.pick?.text ?? "కథలు చదువుదాం.")
-                .font(WidgetPalette.telugu(large ? 26 : 19).weight(.semibold))
-                .foregroundStyle(.primary)
-                .lineSpacing(large ? 6 : 2)
-                .minimumScaleFactor(0.55)
-                .lineLimit(large ? 7 : 3)
-            if entry.showRomanization, let pick = entry.pick {
-                Text(pick.trans)
-                    .font(.system(size: large ? 15 : 12, weight: .medium, design: .serif))
-                    .foregroundStyle(WidgetPalette.accent)
-                    .minimumScaleFactor(0.7)
-                    .lineLimit(large ? 5 : 2)
+            // Spacers on both sides center the sentence between the caption and
+            // the footer instead of leaving an empty band at the bottom.
+            Spacer(minLength: large ? 10 : 4)
+            VStack(alignment: .leading, spacing: large ? 12 : 6) {
+                Text(entry.pick?.text ?? "కథలు చదువుదాం.")
+                    .font(WidgetPalette.telugu(large ? 26 : 19).weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineSpacing(large ? 6 : 2)
+                    .minimumScaleFactor(0.55)
+                    .lineLimit(large ? 7 : 3)
+                if entry.showRomanization, let pick = entry.pick {
+                    Text(pick.trans)
+                        .font(.system(size: large ? 15 : 12, weight: .medium, design: .serif))
+                        .foregroundStyle(WidgetPalette.accent)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(large ? 5 : 2)
+                }
             }
-            Spacer(minLength: 0)
+            Spacer(minLength: large ? 10 : 4)
             if let story = entry.pick?.story {
                 Text("from “\(story)”")
                     .font(.system(size: 11))
@@ -74,7 +79,7 @@ struct SentenceWidget: Widget {
             SentenceWidgetView(entry: entry)
         }
         .configurationDisplayName("Sentence to Read")
-        .description("A full sentence from the stories. Edit the widget to show romanization.")
+        .description("A full sentence from the stories. Edit the widget to hide romanization.")
         .supportedFamilies([.systemMedium, .systemLarge])
     }
 }

@@ -20,6 +20,7 @@ final class AppModel {
     /// Set by a `kathalu://letter/<letter>` deep link (Letter of the Day
     /// widget); LearnView opens that letter in Charts and clears it.
     var deepLinkedLetter: String?
+    @ObservationIgnored private var isBackfillingMeanings = false
 
     // MARK: Settings (mirrors the web app's theme / storyFontSize keys)
 
@@ -166,6 +167,7 @@ final class AppModel {
 
         refreshWidgets(force: true)
         readingActivity.endOrphans()
+        Task { await backfillMeanings() }
     }
 
     private func persist() {
@@ -277,15 +279,39 @@ final class AppModel {
         }
     }
 
-    /// Up to 60 deck cards for the flashcard widget, due ones first.
+    /// Up to 60 deck cards for the flashcard widget, due ones first. Only cards
+    /// with a meaning — Reveal must always show a translation.
     private func flashcardSnapshot() -> [FlashcardSnapshot] {
         deckCards
+            .filter { !($0.meaning ?? "").isEmpty }
             .sorted { $0.isDue != $1.isDue ? $0.isDue : $0.addedAt > $1.addedAt }
             .prefix(60)
             .map { FlashcardSnapshot(
                 telugu: $0.telugu,
                 trans: $0.trans ?? Transliterator.transliterate($0.telugu),
                 meaning: $0.meaning) }
+    }
+
+    /// Fetches meanings for deck cards that don't have one yet, so the
+    /// flashcard widget can always show a translation. Words tapped once in the
+    /// reader join the deck without a meaning (it's only looked up when the
+    /// meaning sheet opens). A few per run keeps the free lookup API happy;
+    /// runs at launch and whenever the app returns to the foreground.
+    func backfillMeanings() async {
+        guard !isBackfillingMeanings else { return }
+        isBackfillingMeanings = true
+        defer { isBackfillingMeanings = false }
+        let missing = deckCards
+            .filter { ($0.meaning ?? "").isEmpty }
+            .sorted { $0.isDue != $1.isDue ? $0.isDue : $0.addedAt > $1.addedAt }
+            .prefix(10)
+        for card in missing {
+            // MyMemory sometimes echoes the input back — that's not a meaning.
+            if let meaning = await TranslationService.meaning(for: card.telugu),
+               !meaning.isEmpty, meaning != card.telugu {
+                cacheMeaning(meaning, for: card.telugu)
+            }
+        }
     }
 
     /// Routes a `kathalu://` deep link from a widget or the Live Activity and
@@ -511,11 +537,16 @@ final class AppModel {
     }
 
     /// The trailing 7 days for the library week strip (oldest first).
+    /// This calendar week, Monday → Sunday. Days after today are included;
+    /// views dim them.
     var weekStrip: [(day: DayStamp, didRead: Bool, isToday: Bool)] {
         let readDays = Set(data.readingDates)
-        return (0..<7).reversed().map { offset in
-            let day = DayStamp.today.adding(days: -offset)
-            return (day, readDays.contains(day), offset == 0)
+        let today = DayStamp.today
+        let weekday = Calendar.current.component(.weekday, from: today.date)  // 1 = Sunday
+        let monday = today.adding(days: -((weekday + 5) % 7))
+        return (0..<7).map { offset in
+            let day = monday.adding(days: offset)
+            return (day, readDays.contains(day), day == today)
         }
     }
 

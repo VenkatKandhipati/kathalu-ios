@@ -11,20 +11,20 @@ struct WordEntry: TimelineEntry {
 }
 
 struct WordProvider: AppIntentTimelineProvider {
-    private static let slotHours = 3
+    private static let slotHours = 1
 
     func placeholder(in context: Context) -> WordEntry {
-        WordEntry(date: .now, pick: nil, showRomanization: false)
+        WordEntry(date: .now, pick: nil, showRomanization: true)
     }
 
     func snapshot(for configuration: WordWidgetConfig, in context: Context) async -> WordEntry {
         entry(at: .now, config: configuration)
     }
 
-    /// A new word every 3 hours over the next half-day. Each pick is fixed by
-    /// its slot, so reloads don't reshuffle the word on screen.
+    /// A new word every hour over the next half-day. Each pick is fixed by its
+    /// slot, so reloads don't reshuffle the word on screen.
     func timeline(for configuration: WordWidgetConfig, in context: Context) async -> Timeline<WordEntry> {
-        let dates = SlotPicker.entryDates(from: .now, hours: Self.slotHours, count: 5)
+        let dates = SlotPicker.entryDates(from: .now, hours: Self.slotHours, count: 12)
         return Timeline(entries: dates.map { entry(at: $0, config: configuration) }, policy: .atEnd)
     }
 
@@ -48,23 +48,21 @@ struct WordWidgetView: View {
 
     @ViewBuilder private var content: some View {
         if family == .accessoryRectangular {
-            // Lock Screen: rendered monochrome by the system, so no custom colors.
-            VStack(alignment: .leading, spacing: 1) {
+            // Lock Screen: the system renders it monochrome, so no custom
+            // colors. The slot's size is fixed — scale the text up to fill it.
+            VStack(alignment: .leading, spacing: 0) {
                 Text(entry.word)
-                    .font(WidgetPalette.telugu(22).weight(.bold))
+                    .font(WidgetPalette.telugu(34).weight(.bold))
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
                 if entry.showRomanization {
                     Text(entry.trans)
-                        .font(.system(size: 13, weight: .medium, design: .serif))
+                        .font(.system(size: 17, weight: .medium, design: .serif))
+                        .minimumScaleFactor(0.6)
                         .lineLimit(1)
-                } else {
-                    Text("Word to read")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         } else {
             let medium = family == .systemMedium
             VStack(spacing: medium ? 8 : 5) {
@@ -98,7 +96,7 @@ struct WordWidget: Widget {
             WordWidgetView(entry: entry)
         }
         .configurationDisplayName("Word to Read")
-        .description("A Telugu word from the stories. Edit the widget to show romanization.")
+        .description("A new Telugu word from the stories every hour. Edit the widget to hide romanization.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular])
     }
 }

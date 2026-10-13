@@ -52,10 +52,17 @@ struct LetterWidgetView: View {
                         .foregroundStyle(.primary)
                         .lineLimit(3)
                         .minimumScaleFactor(0.8)
-                    Text("\(entry.group.telugu) · \(entry.group.name)")
-                        .font(.system(size: 10.5, design: .serif).italic())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                    // Telugu and English group names on separate lines — long
+                    // varga names (అంతస్థలు · ఊష్మాలు) truncated on one line.
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(entry.group.telugu)
+                            .font(WidgetPalette.telugu(11))
+                        Text(entry.group.name)
+                            .font(.system(size: 10.5, design: .serif).italic())
+                    }
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 }
                 Spacer(minLength: 0)
             }

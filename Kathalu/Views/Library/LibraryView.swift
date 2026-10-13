@@ -118,6 +118,8 @@ struct WeekStripView: View {
                         }
                 }
                 .frame(maxWidth: .infinity)
+                // The strip is the calendar week (Mon → Sun); days to come are dimmed.
+                .opacity(entry.day > DayStamp.today ? 0.4 : 1)
             }
         }
     }

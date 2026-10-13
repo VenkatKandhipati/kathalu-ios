@@ -34,10 +34,10 @@ struct NextFlashcardIntent: AppIntent {
 
 struct FlashcardEntry: TimelineEntry {
     let date: Date
-    let card: FlashcardSnapshot
+    /// nil when no deck card has a meaning yet (the widget shows a hint).
+    let card: FlashcardSnapshot?
     let revealed: Bool
-    /// 1-based position within the deck, or nil when showing story words.
-    let deckPosition: Int?
+    let position: Int
     let deckSize: Int
 }
 
@@ -45,34 +45,32 @@ struct FlashcardProvider: TimelineProvider {
     func placeholder(in context: Context) -> FlashcardEntry {
         FlashcardEntry(date: .now,
                        card: FlashcardSnapshot(telugu: "కథ", trans: "katha", meaning: "story"),
-                       revealed: false, deckPosition: 1, deckSize: 12)
+                       revealed: true, position: 1, deckSize: 12)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FlashcardEntry) -> Void) {
-        completion(current())
+        completion(context.isPreview ? placeholder(in: context) : current())
     }
 
     /// State only changes via the buttons (which reload the widget) or the app
-    /// (which reloads this kind when the deck changes), so no schedule needed.
+    /// (which reloads this kind when the deck or its meanings change).
     func getTimeline(in context: Context, completion: @escaping (Timeline<FlashcardEntry>) -> Void) {
         completion(Timeline(entries: [current()], policy: .never))
     }
 
+    /// The app only snapshots cards that have a meaning, so every card here
+    /// can be revealed with its translation.
     private func current() -> FlashcardEntry {
         let defaults = WidgetShared.defaults
         let position = max(0, defaults?.integer(forKey: WidgetShared.Key.flashPosition) ?? 0)
         let revealed = defaults?.bool(forKey: WidgetShared.Key.flashRevealed) ?? false
         let deck = WidgetData.deck
-        if !deck.isEmpty {
-            let i = position % deck.count
-            return FlashcardEntry(date: .now, card: deck[i], revealed: revealed,
-                                  deckPosition: i + 1, deckSize: deck.count)
+        guard !deck.isEmpty else {
+            return FlashcardEntry(date: .now, card: nil, revealed: false, position: 0, deckSize: 0)
         }
-        // Empty deck: practice with words from the stories instead.
-        let pool = WidgetData.wordPool
-        let pick = pool.isEmpty ? nil : pool[SlotPicker.index(slot: position, salt: 0xF1A5, count: pool.count)]
-        let card = FlashcardSnapshot(telugu: pick?.text ?? "కథ", trans: pick?.trans ?? "katha", meaning: nil)
-        return FlashcardEntry(date: .now, card: card, revealed: revealed, deckPosition: nil, deckSize: 0)
+        let i = position % deck.count
+        return FlashcardEntry(date: .now, card: deck[i], revealed: revealed,
+                              position: i + 1, deckSize: deck.count)
     }
 }
 
@@ -85,35 +83,46 @@ struct FlashcardWidgetView: View {
     private var medium: Bool { family == .systemMedium }
 
     var body: some View {
-        VStack(spacing: 6) {
+        Group {
+            if let card = entry.card {
+                cardView(card)
+            } else {
+                emptyState
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(WidgetPalette.background, for: .widget)
+        .widgetURL(entry.card == nil
+            ? WidgetShared.Link.story(WidgetData.catalog.index(for: entry.date))
+            : WidgetShared.Link.review)
+    }
+
+    private func cardView(_ card: FlashcardSnapshot) -> some View {
+        VStack(spacing: 4) {
             HStack {
-                WidgetCaption(text: entry.deckPosition == nil ? "Story words" : "Flashcards")
+                WidgetCaption(text: "Flashcards")
                 Spacer()
-                if let position = entry.deckPosition {
-                    Text("\(position)/\(entry.deckSize)")
-                        .font(.system(size: 10, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
-                }
+                Text("\(entry.position)/\(entry.deckSize)")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
-            Text(entry.card.telugu)
+            Text(card.telugu)
                 .font(WidgetPalette.telugu(medium ? 36 : 28).weight(.bold))
                 .foregroundStyle(.primary)
                 .minimumScaleFactor(0.4)
                 .lineLimit(1)
             if entry.revealed {
-                Text(entry.card.trans)
+                Text(card.trans)
                     .font(.system(size: medium ? 15 : 12, weight: .medium, design: .serif))
                     .foregroundStyle(WidgetPalette.accent)
                     .lineLimit(1)
-                if let meaning = entry.card.meaning, !meaning.isEmpty {
-                    Text(meaning)
-                        .font(.system(size: medium ? 14 : 11))
-                        .foregroundStyle(WidgetPalette.green)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(medium ? 2 : 1)
-                        .minimumScaleFactor(0.8)
-                }
+                Text(card.meaning ?? "")
+                    .font(.system(size: medium ? 15 : 12, weight: .semibold))
+                    .foregroundStyle(WidgetPalette.green)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(medium ? 2 : 1)
+                    .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 0)
             HStack(spacing: 8) {
@@ -126,9 +135,25 @@ struct FlashcardWidgetView: View {
             }
             .buttonStyle(.plain)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(WidgetPalette.background, for: .widget)
-        .widgetURL(WidgetShared.Link.review)
+    }
+
+    /// No deck card has a meaning yet — words join the deck when tapped in a
+    /// story, and meanings are filled in when the app is opened.
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            WidgetCaption(text: "Flashcards")
+            Spacer(minLength: 0)
+            Image(systemName: "rectangle.on.rectangle")
+                .font(.system(size: medium ? 24 : 20))
+                .foregroundStyle(WidgetPalette.accent)
+            Text("Tap words while reading a story to build your deck.")
+                .font(.system(size: medium ? 14 : 12, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(3)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func pill(_ title: String, filled: Bool) -> some View {
@@ -147,7 +172,7 @@ struct FlashcardWidget: Widget {
             FlashcardWidgetView(entry: entry)
         }
         .configurationDisplayName("Flashcard")
-        .description("Flip through your review deck right on the Home Screen.")
+        .description("Flip through your review deck — Reveal shows the romanization and English meaning.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

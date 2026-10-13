@@ -194,12 +194,12 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 
 | Widget | Sizes | What it shows · tap opens |
 |---|---|---|
-| **Reading Streak** | small, medium, lock-screen circular + inline | flame + day count + read-today; **medium adds the 7-day week strip** · today's story |
-| **Word to Read** | small, medium, **lock-screen rectangular** | a story word every 3 h; per-instance *Show romanization* toggle · the word's story |
+| **Reading Streak** | small, medium, lock-screen circular + inline | flame + day count + read-today; **medium adds the Mon → Sun week strip** (future days dimmed; the Read tab's strip matches) · today's story |
+| **Word to Read** | small, medium, **lock-screen rectangular** | a new story word **every hour**; *Show romanization* toggle, **on by default** · the word's story |
 | **Today's Story** | small, medium | story of the day on the hero-card gradient; medium adds your best-score ring · that story |
 | **Letter of the Day** | small, medium | one akshara a day, walking the alphabet; medium adds sound hint + varga · Charts, letter drawer open |
-| **Sentence to Read** | medium, large | a full sentence every 6 h (124 usable from the corpus); romanization toggle · the sentence's story |
-| **Flashcard** | small, medium | **interactive** Reveal / Next buttons (iOS 17 AppIntents) over your deck, due cards first; falls back to story words when the deck is empty · Review tab |
+| **Sentence to Read** | medium, large | a full sentence every 6 h (124 usable from the corpus); romanization toggle, on by default · the sentence's story |
+| **Flashcard** | small, medium | **interactive** Reveal / Next buttons (iOS 17 AppIntents) over your deck, due cards first; Reveal always shows romanization **and English meaning** — only cards with a meaning are included, and the app backfills missing meanings (10 per launch/foreground) · Review tab |
 | **Reading Live Activity** | Lock Screen + Dynamic Island (iPhone only) | open story, progress %, time read, words looked up; started by the reader, updated on background/finish, ended on close · that story |
 
 **As-built notes**
@@ -207,6 +207,7 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 - **Data flow:** the app writes raw data only (`readDays`, `storyBest`, up to 60 deck cards) from `persist()` and reloads just the kinds that changed. Widgets compute streak / today's story / letter of the day themselves, so they roll over at midnight without the app.
 - **Stable picks:** word and sentence choices are a pure function of the time slot (`SlotPicker`, SplitMix64), so frequent reloads never reshuffle what's on screen.
 - **Sentence splitting:** at `. ! ?` only outside quotes; the corpus's `..` pause is not a sentence end.
+- **Meaning backfill:** words tapped once join the deck without a meaning; `AppModel.backfillMeanings()` fetches up to 10 missing ones via `TranslationService` at launch and on every return to the foreground (skips MyMemory echoes).
 - **Flashcard is reveal-only:** nothing is rated from the widget, so SM-2 and sync stay owned by the app.
 - **Deep links:** `kathalu://story/<idx>`, `kathalu://review`, `kathalu://letter/<letter>` → `AppModel.handleDeepLink`.
 - **Gotchas hit:** the new target defaulted to an iOS 26.2 deployment target (hid the widgets on the iPad) — must match the app's 18.0; running the *widget* scheme on device throws a benign SpringBoard error — run the `Kathalu` scheme.

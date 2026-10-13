@@ -29,6 +29,7 @@ struct RootView: View {
 /// The app's tabs: Library · Learn · Review · Progress · Profile.
 struct MainTabView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab = initialTab
 
     /// Debug hook: `simctl launch … -openTab review` selects a tab at launch.
@@ -67,6 +68,10 @@ struct MainTabView: View {
         // kathalu://letter/<letter>.
         .onOpenURL { url in
             if let tab = model.handleDeepLink(url) { selectedTab = tab }
+        }
+        // Fill in missing flashcard meanings each time the app comes back.
+        .onChange(of: scenePhase) {
+            if scenePhase == .active { Task { await model.backfillMeanings() } }
         }
     }
 

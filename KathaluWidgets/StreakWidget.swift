@@ -31,7 +31,7 @@ struct StreakProvider: TimelineProvider {
         StreakEntry(date: date,
                     streak: WidgetData.streak(asOf: date, days: days),
                     readToday: days.contains(WidgetData.dayString(date)),
-                    week: WidgetData.week(endingOn: date, days: days))
+                    week: WidgetData.week(containing: date, days: days))
     }
 }
 
@@ -90,8 +90,8 @@ struct StreakWidgetView: View {
         }
     }
 
-    /// The Read tab's 7-day strip: green when read, accent outline for an
-    /// unread today.
+    /// The Read tab's Mon → Sun strip: green when read, accent outline for an
+    /// unread today, days still to come dimmed.
     private var weekStrip: some View {
         VStack(alignment: .leading, spacing: 8) {
             WidgetCaption(text: "This week")
@@ -119,6 +119,7 @@ struct StreakWidgetView: View {
                             .frame(height: 34)
                     }
                     .frame(maxWidth: .infinity)
+                    .opacity(day.isFuture ? 0.4 : 1)
                 }
             }
         }

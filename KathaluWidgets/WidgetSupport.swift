@@ -92,15 +92,22 @@ enum WidgetData {
         let letter: String
         let read: Bool
         let isToday: Bool
+        let isFuture: Bool
     }
 
-    /// The trailing 7 days ending on `date`, oldest first (the Read tab's strip).
-    static func week(endingOn date: Date, days: Set<String>) -> [WeekDay] {
+    /// The calendar week containing `date`, Monday → Sunday (matches the Read
+    /// tab's strip). Days after `date` are flagged so the view can dim them.
+    static func week(containing date: Date, days: Set<String>) -> [WeekDay] {
         let symbols = Calendar.current.veryShortWeekdaySymbols
-        return (0..<7).reversed().map { offset in
-            let day = addDays(-offset, to: date)
-            let weekday = Calendar.current.component(.weekday, from: day)
-            return WeekDay(letter: symbols[weekday - 1], read: days.contains(dayString(day)), isToday: offset == 0)
+        let weekday = Calendar.current.component(.weekday, from: date)   // 1 = Sunday
+        let monday = addDays(-((weekday + 5) % 7), to: date)
+        return (0..<7).map { offset in
+            let day = addDays(offset, to: monday)
+            let symbol = symbols[Calendar.current.component(.weekday, from: day) - 1]
+            return WeekDay(letter: symbol,
+                           read: days.contains(dayString(day)),
+                           isToday: offset == (weekday + 5) % 7,
+                           isFuture: offset > (weekday + 5) % 7)
         }
     }
 
