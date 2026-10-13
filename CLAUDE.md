@@ -26,8 +26,12 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   a runtime crash), **ask first and list exactly what you'd check** so the user can decide
   whether to just send screenshots instead.
 - The project uses `PBXFileSystemSynchronizedRootGroup` (objectVersion 77): new files
-  anywhere under `Kathalu/` join the target automatically — never edit `project.pbxproj`
-  to add files.
+  anywhere under `Kathalu/` join the app target automatically, and new files under
+  `KathaluWidgets/` join the widget extension — never edit `project.pbxproj` to add files.
+  The one exception: an app file the widget also needs must be listed in the
+  `Exceptions for "Kathalu" folder in "KathaluWidgetsExtension"` set's
+  `membershipExceptions` (that's what Xcode's Target Membership checkbox writes).
+- Building the `Kathalu` scheme also builds the embedded `KathaluWidgetsExtension`.
 - There is no test target.
 
 ### DEBUG launch hooks (simctl launch args)
@@ -61,6 +65,27 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   bad pronunciation.
 - `SpeechService` is the only TTS path; it applies the user's voice/rate per utterance.
   Prefer speaking whole words over bare syllables — the voice handles context better.
+
+## Widgets & Live Activity
+
+- `Kathalu/Shared/WidgetShared.swift` is the app↔extension contract (member of both
+  targets): App Group `group.me.kathalu.app`, snapshot keys, widget kinds, deep links,
+  `FlashcardSnapshot`, `ReadingActivityAttributes`. **Never rename a shipped widget kind**
+  — users' placed widgets would disappear.
+- The app writes only raw data (`readDays`, `storyBest`, deck `flashcards`) via
+  `AppModel.refreshWidgets()`, called from `persist()`; it reloads only the kinds whose
+  data changed. Widgets compute anything time-based themselves (streak, today's story,
+  letter of the day) so they stay right past midnight without the app running.
+- Random picks (word, sentence) are a pure function of the time slot (`SlotPicker`), so a
+  reload never reshuffles what's on screen. Don't use `hashValue`/`randomElement` there.
+- Shared app files the extension compiles: Akshara, Story, VocabCard (DayStamp),
+  StoryStore, Transliterator, WidgetShared, plus stories.json and the Noto fonts.
+- Deep links (`AppModel.handleDeepLink` → tab): `kathalu://story/<idx>`,
+  `kathalu://review`, `kathalu://letter/<letter>`.
+- The reading Live Activity (`ReadingActivityController`) starts when `ReaderView`
+  appears, updates when it's backgrounded or finished, ends on dismiss. iPhone only.
+- The widget target's deployment target must match the app's (iOS 18.0); a newer value
+  silently hides the widgets on older devices.
 
 ## UI conventions
 

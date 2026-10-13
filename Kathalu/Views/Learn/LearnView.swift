@@ -81,7 +81,27 @@ struct LearnView: View {
                         .presentationBackgroundInteraction(.enabled(upThrough: .height(300)))
                 }
             }
+            // Letter of the Day widget tap. onAppear covers the first visit to
+            // the tab (onChange can't fire before the view exists).
+            .onAppear(perform: openDeepLinkedLetter)
+            .onChange(of: model.deepLinkedLetter) { openDeepLinkedLetter() }
         }
+    }
+
+    /// Opens a `kathalu://letter/<letter>` deep link: switches to Charts,
+    /// expands the letter's section, and shows its detail drawer.
+    private func openDeepLinkedLetter() {
+        guard let letter = model.deepLinkedLetter else { return }
+        model.deepLinkedLetter = nil
+        let groups = [AksharaData.vowels] + AksharaData.consonantGroups
+        guard let group = groups.first(where: { $0.aksharas.contains { $0.letter == letter } }),
+              let akshara = group.aksharas.first(where: { $0.letter == letter })
+        else { return }
+        learnMode = .charts
+        if group.id == AksharaData.vowels.id { vowelsExpanded = true } else { consonantsExpanded = true }
+        selected = AksharaSelection(akshara: akshara, group: group)
+        showingDetail = true
+        if model.soundEnabled { model.speech.speak(akshara.spokenText) }
     }
 
     private var chartsContent: some View {

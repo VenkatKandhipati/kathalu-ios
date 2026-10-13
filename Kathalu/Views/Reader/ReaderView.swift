@@ -67,12 +67,21 @@ struct ReaderView: View {
         }
         .onAppear {
             resumeTimer()
+            model.readingActivity.start(story: story)
             guard !model.hasSeenSoundTip else { return }
             withAnimation(.spring(response: 0.4).delay(0.6)) { showSoundTip = true }
         }
-        .onDisappear { pauseTimer() }
+        .onDisappear {
+            pauseTimer()
+            model.readingActivity.end()
+        }
         .onChange(of: scenePhase) {
-            if scenePhase == .active { resumeTimer() } else { pauseTimer() }
+            if scenePhase == .active {
+                resumeTimer()
+            } else {
+                pauseTimer()
+                syncReadingActivity()
+            }
         }
     }
 
@@ -424,6 +433,17 @@ struct ReaderView: View {
         let total = max(1, story.wordCount)
         let pct = max(0, 100 - Int((Double(tappedWords.count) / Double(total) * 100).rounded()))
         model.finishReading(storyIdx: story.index, proficiencyPct: pct)
+        syncReadingActivity()
+    }
+
+    /// Pushes the current read into the Live Activity (shown on the Lock
+    /// Screen / Dynamic Island once the reader is backgrounded).
+    private func syncReadingActivity() {
+        model.readingActivity.update(
+            progress: Double(didFinish ? 1 : progressFraction),
+            wordsLookedUp: tappedWords.count,
+            secondsRead: Int(timerElapsed),
+            finished: didFinish)
     }
 }
 

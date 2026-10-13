@@ -63,10 +63,10 @@ struct MainTabView: View {
                 ProfileView()
             }
         }
-        // Widget / deep-link entry: kathalu://story/<idx> opens that story.
+        // Widget / Live Activity entry: kathalu://story/<idx>, kathalu://review,
+        // kathalu://letter/<letter>.
         .onOpenURL { url in
-            model.handleDeepLink(url)
-            if model.deepLinkedStoryIndex != nil { selectedTab = "library" }
+            if let tab = model.handleDeepLink(url) { selectedTab = tab }
         }
     }
 

@@ -18,9 +18,12 @@ struct StoryStore {
     }
 
     /// Same "story of the day" rule as the web app: dayOfYear % count.
-    var todayIndex: Int {
+    var todayIndex: Int { index(for: .now) }
+
+    /// The story-of-the-day index for any date (widgets schedule ahead with it).
+    func index(for date: Date) -> Int {
         guard !stories.isEmpty else { return 0 }
-        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: .now) ?? 1
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: date) ?? 1
         return dayOfYear % stories.count
     }
 

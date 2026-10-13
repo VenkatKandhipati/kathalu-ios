@@ -55,11 +55,15 @@
 		82F07883307DECE100BFC778 /* Exceptions for "Kathalu" folder in "KathaluWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Models/Akshara.swift,
 				Models/Story.swift,
+				Models/VocabCard.swift,
 				Resources/NotoSansTelugu.ttf,
 				Resources/NotoSerifTelugu.ttf,
 				Resources/stories.json,
+				Services/StoryStore.swift,
 				Services/Transliterator.swift,
+				Shared/WidgetShared.swift,
 			);
 			target = 82F07867307DEAA300BFC778 /* KathaluWidgetsExtension */;
 		};

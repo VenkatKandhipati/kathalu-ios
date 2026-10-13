@@ -6,10 +6,6 @@ import WidgetKit
 @Observable
 @MainActor
 final class AppModel {
-    /// Shared container between the app and its widget extension (streak
-    /// snapshot). Must match the App Group capability on both targets.
-    static let appGroupID = "group.me.kathalu.app"
-
     // MARK: Content & user data
 
     let storyStore = StoryStore()
@@ -21,6 +17,9 @@ final class AppModel {
     /// Set by a `kathalu://story/<idx>` deep link (from a widget); LibraryView
     /// opens the story and clears it.
     var deepLinkedStoryIndex: Int?
+    /// Set by a `kathalu://letter/<letter>` deep link (Letter of the Day
+    /// widget); LearnView opens that letter in Charts and clears it.
+    var deepLinkedLetter: String?
 
     // MARK: Settings (mirrors the web app's theme / storyFontSize keys)
 
@@ -128,6 +127,7 @@ final class AppModel {
     // MARK: Services
 
     let speech = SpeechService()
+    let readingActivity = ReadingActivityController()
     private let localStore = LocalStore()
     private let aksharaStore = AksharaStore()
     private let pathStore = PathStore()
@@ -164,11 +164,13 @@ final class AppModel {
             Task { await hydrate(userID: session.userID) }
         }
 
-        refreshWidgets()
+        refreshWidgets(force: true)
+        readingActivity.endOrphans()
     }
 
     private func persist() {
         localStore.save(data)
+        refreshWidgets()
     }
 
     // MARK: Reading
@@ -236,29 +238,75 @@ final class AppModel {
             sync.pushProgress(storyIdx: storyIdx, bestPct: best)
             sync.pushReadingDay(storyIdx: storyIdx, pct: proficiencyPct)
         }
-        refreshWidgets()
     }
 
     // MARK: Widgets & deep links
 
-    /// Writes the streak snapshot the widget reads from the shared App Group,
-    /// then asks WidgetKit to refresh. Safe no-op until the App Group capability
-    /// is added to both targets. (Words come from the widget's own bundled
-    /// stories.json, so only the streak needs sharing.)
-    func refreshWidgets() {
-        if let defaults = UserDefaults(suiteName: Self.appGroupID) {
-            defaults.set(data.streak, forKey: "streak")
-            defaults.set(data.readingDates.contains(DayStamp.today), forKey: "readToday")
+    /// Writes the App Group snapshot the widgets read (raw reading days, best
+    /// scores, deck cards) and reloads only the widget kinds whose data changed.
+    /// Called from `persist()`, so it runs on every data change — cheap, and
+    /// app-initiated reloads while foregrounded don't spend the widget budget.
+    func refreshWidgets(force: Bool = false) {
+        guard let defaults = WidgetShared.defaults else { return }
+        typealias Key = WidgetShared.Key
+        typealias Kind = WidgetShared.Kind
+        var changed: Set<String> = []
+
+        let readDays = data.readingDates.map(\.description)
+        if force || defaults.stringArray(forKey: Key.readDays) != readDays {
+            defaults.set(readDays, forKey: Key.readDays)
+            changed.formUnion([Kind.streak, Kind.todayStory])
         }
-        WidgetCenter.shared.reloadAllTimelines()
+
+        let best = Dictionary(uniqueKeysWithValues: data.storyProgress.map { (String($0.key), $0.value.bestPct) })
+        if force || (defaults.dictionary(forKey: Key.storyBest) as? [String: Int]) != best {
+            defaults.set(best, forKey: Key.storyBest)
+            changed.insert(Kind.todayStory)
+        }
+
+        if let cards = try? JSONEncoder().encode(flashcardSnapshot()),
+           force || defaults.data(forKey: Key.flashcards) != cards {
+            defaults.set(cards, forKey: Key.flashcards)
+            changed.insert(Kind.flashcard)
+        }
+
+        if force {
+            WidgetCenter.shared.reloadAllTimelines()
+        } else {
+            changed.forEach { WidgetCenter.shared.reloadTimelines(ofKind: $0) }
+        }
     }
 
-    /// Parses `kathalu://story/<idx>` (from a widget tap); LibraryView opens the
-    /// story via `deepLinkedStoryIndex`.
-    func handleDeepLink(_ url: URL) {
-        guard url.scheme == "kathalu", url.host == "story",
-              let idx = Int(url.lastPathComponent) else { return }
-        deepLinkedStoryIndex = idx
+    /// Up to 60 deck cards for the flashcard widget, due ones first.
+    private func flashcardSnapshot() -> [FlashcardSnapshot] {
+        deckCards
+            .sorted { $0.isDue != $1.isDue ? $0.isDue : $0.addedAt > $1.addedAt }
+            .prefix(60)
+            .map { FlashcardSnapshot(
+                telugu: $0.telugu,
+                trans: $0.trans ?? Transliterator.transliterate($0.telugu),
+                meaning: $0.meaning) }
+    }
+
+    /// Routes a `kathalu://` deep link from a widget or the Live Activity and
+    /// returns the tab to show (`nil` for links it doesn't understand).
+    func handleDeepLink(_ url: URL) -> String? {
+        guard url.scheme == "kathalu" else { return nil }
+        switch url.host {
+        case "story":
+            guard let idx = Int(url.lastPathComponent) else { return nil }
+            deepLinkedStoryIndex = idx
+            return "library"
+        case "review":
+            return "review"
+        case "letter":
+            let letter = url.lastPathComponent
+            guard !letter.isEmpty, letter != "/" else { return nil }
+            deepLinkedLetter = letter
+            return "learn"
+        default:
+            return nil
+        }
     }
 
     // MARK: Review
