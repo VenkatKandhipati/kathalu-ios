@@ -44,6 +44,13 @@ struct LibraryView: View {
                 }
                 #endif
             }
+            // A kathalu://story/<idx> deep link (e.g. from a widget) lands here.
+            .onChange(of: model.deepLinkedStoryIndex) { _, idx in
+                if let idx, let story = model.story(at: idx) {
+                    selectedStory = story
+                    model.deepLinkedStoryIndex = nil
+                }
+            }
         }
     }
 

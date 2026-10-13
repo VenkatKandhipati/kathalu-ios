@@ -1,10 +1,15 @@
 import SwiftUI
 import Observation
+import WidgetKit
 
 /// Root application state: story catalog, user data, settings, auth and sync.
 @Observable
 @MainActor
 final class AppModel {
+    /// Shared container between the app and its widget extension (streak
+    /// snapshot). Must match the App Group capability on both targets.
+    static let appGroupID = "group.me.kathalu.app"
+
     // MARK: Content & user data
 
     let storyStore = StoryStore()
@@ -13,6 +18,9 @@ final class AppModel {
     var aksharaCards: [String: AksharaCard]
     /// Journey checkpoint state (local-only, see PathStore).
     var pathProgress: PathProgress
+    /// Set by a `kathalu://story/<idx>` deep link (from a widget); LibraryView
+    /// opens the story and clears it.
+    var deepLinkedStoryIndex: Int?
 
     // MARK: Settings (mirrors the web app's theme / storyFontSize keys)
 
@@ -155,6 +163,8 @@ final class AppModel {
         if let session = auth.session {
             Task { await hydrate(userID: session.userID) }
         }
+
+        refreshWidgets()
     }
 
     private func persist() {
@@ -226,6 +236,29 @@ final class AppModel {
             sync.pushProgress(storyIdx: storyIdx, bestPct: best)
             sync.pushReadingDay(storyIdx: storyIdx, pct: proficiencyPct)
         }
+        refreshWidgets()
+    }
+
+    // MARK: Widgets & deep links
+
+    /// Writes the streak snapshot the widget reads from the shared App Group,
+    /// then asks WidgetKit to refresh. Safe no-op until the App Group capability
+    /// is added to both targets. (Words come from the widget's own bundled
+    /// stories.json, so only the streak needs sharing.)
+    func refreshWidgets() {
+        if let defaults = UserDefaults(suiteName: Self.appGroupID) {
+            defaults.set(data.streak, forKey: "streak")
+            defaults.set(data.readingDates.contains(DayStamp.today), forKey: "readToday")
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    /// Parses `kathalu://story/<idx>` (from a widget tap); LibraryView opens the
+    /// story via `deepLinkedStoryIndex`.
+    func handleDeepLink(_ url: URL) {
+        guard url.scheme == "kathalu", url.host == "story",
+              let idx = Int(url.lastPathComponent) else { return }
+        deepLinkedStoryIndex = idx
     }
 
     // MARK: Review

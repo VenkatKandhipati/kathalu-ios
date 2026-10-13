@@ -63,6 +63,11 @@ struct MainTabView: View {
                 ProfileView()
             }
         }
+        // Widget / deep-link entry: kathalu://story/<idx> opens that story.
+        .onOpenURL { url in
+            model.handleDeepLink(url)
+            if model.deepLinkedStoryIndex != nil { selectedTab = "library" }
+        }
     }
 
     /// Everything due for review today: story vocabulary plus script letters.
