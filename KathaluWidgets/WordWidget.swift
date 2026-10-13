@@ -32,7 +32,7 @@ struct WordProvider: AppIntentTimelineProvider {
         let pool = WidgetData.wordPool
         let slot = SlotPicker.slot(for: date, hours: Self.slotHours)
         let pick = pool.isEmpty ? nil : pool[SlotPicker.index(slot: slot, salt: 0xA11CE, count: pool.count)]
-        return WordEntry(date: date, pick: pick, showRomanization: config.showRomanization)
+        return WordEntry(date: date, pick: pick, showRomanization: !config.hideRomanization)
     }
 }
 

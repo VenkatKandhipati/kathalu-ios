@@ -28,7 +28,7 @@ struct SentenceProvider: AppIntentTimelineProvider {
         let pool = WidgetData.sentencePool
         let slot = SlotPicker.slot(for: date, hours: Self.slotHours)
         let pick = pool.isEmpty ? nil : pool[SlotPicker.index(slot: slot, salt: 0x5E57, count: pool.count)]
-        return SentenceEntry(date: date, pick: pick, showRomanization: config.showRomanization)
+        return SentenceEntry(date: date, pick: pick, showRomanization: !config.hideRomanization)
     }
 }
 
