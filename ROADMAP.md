@@ -189,18 +189,31 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 
 **Effort: M.** **Files:** `WordSheetView`, `Story` / `ReaderPage` (sentence tokenization), `WordEntry`.
 
-### 7. Home screen widgets (story of the day + streak)
-**Priority: medium — retention/marketing.** `StoryStore.today` and `data.streak` already exist; a WidgetKit extension surfacing them is strong, low-data-risk value.
+### 7. Home- & lock-screen widgets (streak + word-to-read)
+**Priority: medium — retention; user-requested.** Two WidgetKit widgets that put the daily loop on the home/lock screen: a **streak** widget and a **word-to-read** widget (a random Telugu word mined from the story corpus, shown large to read at a glance). `data.streak`, `StoryStore.today`, and the tokenized vocabulary (`Story.words` / `TeluguText`) already exist, so the widget UIs are small — the real work is the shared extension / App-Group / font / deep-link plumbing, which both widgets need.
 
-**What to build**
-- Small + medium widgets: streak flame + today's story title, deep-linking into the reader.
-- Optional lock-screen streak widget.
+**The two widgets**
+- **Streak** — flame + day count, plus a "read today ✓ / not yet" state. Families: `systemSmall` and `accessoryCircular` + `accessoryInline` (lock screen). Taps deep-link into today's story.
+- **Word-to-read** — one random Telugu word shown big for reading practice; romanization hidden by default (reveal + pronounce happen in-app on tap). Families: `systemSmall` (word only) and `systemMedium` (word + "from «story»", optional romanization). Rotates on a timeline a few times a day. Taps deep-link to that word's story (or a word-detail route) so it can be heard and defined.
 
-**Approach notes**
-- Needs a **new widget target + App Group** to share `UserData`/story-of-the-day between app and widget — that's the bulk of the effort, not the UI.
-- Reuse the deep-link path started by the `openStory` debug hook.
+**Shared infrastructure — the bulk of the effort**
+- **New Widget Extension target + App Group.** The streak lives in `userdata.json` inside the app's container; a widget can only read it through a shared **App Group** (write-through `UserData`, or have the app write a tiny snapshot file on change). `stories.json` is bundled, so the word corpus can just be added to the widget target's bundle — no App Group needed for words.
+- **Font sharing.** The bundled **Noto Telugu** fonts must be added to the widget target (+ its Info.plist `UIAppFonts`) or Telugu won't render in the widget.
+- **Code sharing under synchronized groups.** `project.pbxproj` uses `PBXFileSystemSynchronizedRootGroup` (folder membership = *app* target). A widget target needs its own membership for the shared pieces (`Story`, `Transliterator`, `TeluguText`, a trimmed `Theme`, a streak-snapshot model). Cleanest is a small **shared Swift package / framework** (`KathaluCore`) both targets depend on, rather than hand-managing per-file membership.
+- **Deep links.** Promote the `-openStory` debug path to a real URL scheme (`kathalu://story/<idx>`, `kathalu://word/<…>`) handled by `onOpenURL` in `RootView`; attach `widgetURL(...)` to each widget.
+- **Refresh.** A `TimelineProvider` rotates the word a few times/day; the app calls `WidgetCenter.shared.reloadTimelines(...)` when the streak changes (on finish-reading) so the streak widget never goes stale.
 
-**Effort: L (mostly target/App-Group setup).** **Files:** new Widget extension target, shared model via App Group, small refactor so `StoryStore`/`UserData` are reachable from the extension.
+**Phasing**
+1. **Infra spike (L).** Widget target + App Group + fonts + shared-core + URL scheme, proven with a trivial placeholder widget.
+2. **Streak widget (S).** `systemSmall` + lock-screen accessories; deep-link to today's story; reload on streak change.
+3. **Word-to-read widget (S–M).** `systemSmall` + `systemMedium`; timeline rotation; deep-link to the word's story.
+
+**Open decisions**
+- Word widget: show romanization on the medium size, or keep it pure-read (reveal only in-app)?
+- Tapped-word target: open the containing story, or a dedicated word-detail sheet?
+- Rotation cadence (hourly vs ~3×/day vs daily), and whether words are drawn from any story or only ones already opened.
+
+**Effort: L (mostly target / App-Group / shared-core / font setup; each widget UI is S).** **Files:** new Widget extension target, a `KathaluCore` shared module (or per-file target membership), App-Group entitlement on both targets, Noto Telugu added to the widget target, URL-scheme handling in `RootView`, `WidgetCenter` reloads in `AppModel` on streak change.
 
 ### 8. Review modes & smarter scheduling
 **Priority: medium.** Review is reveal-then-rate only. More modes deepen practice; the SM-2 engine is already solid and server-matched.
