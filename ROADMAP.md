@@ -198,7 +198,7 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 | **Word to Read** | small, medium, **lock-screen rectangular** | a new story word **every hour**; *Hide romanization* toggle, off by default (romanization shows) · the word's story |
 | **Today's Story** | small, medium | story of the day on the hero-card gradient; medium adds your best-score ring · that story |
 | **Letter of the Day** | small, medium | one akshara a day, walking the alphabet; medium adds sound hint + varga · Charts, letter drawer open |
-| **Sentence to Read** | medium, large | a full sentence every 6 h (124 usable from the corpus); *Hide romanization* toggle, off by default · the sentence's story |
+| **Sentence to Read** | medium, large | a full sentence every 6 h (124 usable from the corpus) in large type, no story caption; *Hide romanization* toggle, off by default · the sentence's story |
 | **Flashcard** | small, medium | **interactive** Reveal / Next buttons (iOS 17 AppIntents) over your deck, due cards first; Reveal always shows romanization **and English meaning** — only cards with a meaning are included, and the app backfills missing meanings (10 per launch/foreground) · Review tab |
 | **Reading Live Activity** | Lock Screen + Dynamic Island (iPhone only) | open story, progress %, time read, words looked up; started by the reader, updated on background/finish, ended on close · that story |
 

@@ -41,31 +41,25 @@ struct SentenceWidgetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             WidgetCaption(text: "Sentence to read")
-            // Spacers on both sides center the sentence between the caption and
-            // the footer instead of leaving an empty band at the bottom.
+            // Spacers on both sides center the sentence in the space below the
+            // caption. (The story name was dropped; tapping still opens it.)
             Spacer(minLength: large ? 10 : 4)
-            VStack(alignment: .leading, spacing: large ? 12 : 6) {
+            VStack(alignment: .leading, spacing: large ? 14 : 6) {
                 Text(entry.pick?.text ?? "కథలు చదువుదాం.")
-                    .font(WidgetPalette.telugu(large ? 26 : 19).weight(.semibold))
+                    .font(WidgetPalette.telugu(large ? 32 : 23).weight(.semibold))
                     .foregroundStyle(.primary)
                     .lineSpacing(large ? 6 : 2)
-                    .minimumScaleFactor(0.55)
-                    .lineLimit(large ? 7 : 3)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(large ? 8 : 3)
                 if entry.showRomanization, let pick = entry.pick {
                     Text(pick.trans)
-                        .font(.system(size: large ? 15 : 12, weight: .medium, design: .serif))
+                        .font(.system(size: large ? 19 : 14, weight: .medium, design: .serif))
                         .foregroundStyle(WidgetPalette.accent)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.6)
                         .lineLimit(large ? 5 : 2)
                 }
             }
             Spacer(minLength: large ? 10 : 4)
-            if let story = entry.pick?.story {
-                Text("from “\(story)”")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .containerBackground(WidgetPalette.background, for: .widget)
