@@ -1,7 +1,8 @@
 import Foundation
 
 /// Fetches Telugu→English word meanings from the same free MyMemory API the
-/// web reader uses. Callers cache results in the vocab card.
+/// web reader uses. Only a fallback now — `DictionaryService` answers first.
+/// Callers cache results in the vocab card.
 enum TranslationService {
     struct MyMemoryResponse: Decodable {
         struct ResponseData: Decodable { let translatedText: String }
@@ -21,9 +22,17 @@ enum TranslationService {
             let text = decoded.responseData.translatedText
                 .trimmingCharacters(in: .whitespacesAndNewlines)
                 .lowercased()
-            return text.isEmpty ? nil : text
+            return isUsable(text, for: teluguWord) ? text : nil
         } catch {
             return nil
         }
+    }
+
+    /// Rejects empty answers, provider warnings/quota messages, and answers
+    /// that still contain Telugu (an echo or a half-translation).
+    private static func isUsable(_ text: String, for word: String) -> Bool {
+        guard !text.isEmpty, text != word else { return false }
+        if text.contains("mymemory") || text.contains("query length limit") { return false }
+        return !text.unicodeScalars.contains { (0x0C00...0x0C7F).contains($0.value) }
     }
 }

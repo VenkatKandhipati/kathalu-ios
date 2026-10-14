@@ -71,7 +71,13 @@ struct MainTabView: View {
         }
         // Fill in missing flashcard meanings each time the app comes back.
         .onChange(of: scenePhase) {
-            if scenePhase == .active { Task { await model.backfillMeanings() } }
+            if scenePhase == .active {
+                model.applyWidgetGrades()
+                Task { await model.backfillMeanings() }
+            } else if scenePhase == .background {
+                // Leave the widgets current before the app is suspended.
+                model.refreshWidgets()
+            }
         }
     }
 

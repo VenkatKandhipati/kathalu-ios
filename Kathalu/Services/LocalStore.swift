@@ -106,8 +106,14 @@ final class LocalStore {
         return decoded
     }
 
+    /// Serial, so writes land in order; keeps disk I/O off the main thread
+    /// (persist runs on every rating and lookup).
+    private let writeQueue = DispatchQueue(label: "LocalStore.write", qos: .utility)
+
     func save(_ data: UserData) {
         guard let encoded = try? encoder.encode(data) else { return }
-        try? encoded.write(to: fileURL, options: .atomic)
+        writeQueue.async { [fileURL] in
+            try? encoded.write(to: fileURL, options: .atomic)
+        }
     }
 }

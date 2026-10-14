@@ -14,6 +14,14 @@ struct ReaderView: View {
     @State private var tappedWords: Set<String> = []
     @State private var sheetWord: WordSheetItem?
     @State private var didFinish = false
+    /// The reader has reached the end of the story (last page / bottom, or
+    /// the whole story fits). Completion also needs `minimumReadSeconds`.
+    @State private var reachedEnd = false
+    /// Story-wide index of the paragraph at the top of the scroll reader.
+    @State private var scrollParagraph: Int?
+    /// Paragraph restored from a previous visit; drives the "Resumed" pill.
+    @State private var resumedAt: Int?
+    @State private var showResumePill = false
     /// 0…1 reading progress for the continuous scroll reader.
     @State private var scrollProgress: CGFloat = 0
     /// All story paragraphs tokenized once, for the scroll reader.
@@ -30,6 +38,8 @@ struct ReaderView: View {
     @State private var timerAccumulated: TimeInterval = 0
     /// Start of the current active segment; nil while paused (backgrounded).
     @State private var timerSegmentStart: Date?
+    /// How much of `timerElapsed` has already been added to today's total.
+    @State private var reportedSeconds: TimeInterval = 0
 
     private var pages: [ReaderPage] {
         ReaderPage.paginate(story: story, fontSize: model.fontSize.points)
@@ -48,9 +58,12 @@ struct ReaderView: View {
         .overlay(alignment: .topTrailing) {
             if showSoundTip { soundTip }
         }
+        .overlay(alignment: .bottom) {
+            if showResumePill { resumePill }
+        }
         .sheet(item: $sheetWord) { item in
             WordSheetView(word: item.word, story: story)
-                .presentationDetents([.height(400)])
+                .presentationDetents([.height(WordSheetView.height(for: item.word))])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSpeechSettings) {
@@ -67,18 +80,38 @@ struct ReaderView: View {
         }
         .onAppear {
             resumeTimer()
+            restorePosition()
             model.readingActivity.start(story: story)
             guard !model.hasSeenSoundTip else { return }
             withAnimation(.spring(response: 0.4).delay(0.6)) { showSoundTip = true }
         }
         .onDisappear {
+            savePosition()
             pauseTimer()
             model.readingActivity.end()
+        }
+        .task {
+            // Report reading time as it accrues so the streak (and its widget)
+            // flips the moment today's goal is reached, mid-story.
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(15))
+                if timerSegmentStart != nil { reportReadingTime() }
+            }
+        }
+        .task(id: reachedEnd) {
+            // End reached before the minimum read time: finish once it passes
+            // (the timer pauses in the background, so check while visible).
+            guard reachedEnd else { return }
+            while !didFinish, !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                finishIfNeeded()
+            }
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
                 resumeTimer()
             } else {
+                savePosition()
                 pauseTimer()
                 syncReadingActivity()
             }
@@ -101,6 +134,14 @@ struct ReaderView: View {
         guard let start = timerSegmentStart else { return }
         timerAccumulated += Date().timeIntervalSince(start)
         timerSegmentStart = nil
+        reportReadingTime()
+    }
+
+    /// Hands newly read time to the model's daily total (the streak goal).
+    private func reportReadingTime() {
+        let elapsed = timerElapsed
+        model.addReadingTime(elapsed - reportedSeconds)
+        reportedSeconds = elapsed
     }
 
     /// A muted, ticking stopwatch label — `m:ss`, rolling to `h:mm:ss` past an hour.
@@ -261,13 +302,15 @@ struct ReaderView: View {
     /// Continuous, infinite-scroll reader (the default).
     private var scrollReader: some View {
         GeometryReader { outer in
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
-                    titleBlock
+                    titleBlock.id(-1)  // scroll position -1 = at the top
                     ForEach(Array(scrollParagraphs.enumerated()), id: \.offset) { _, tokens in
                         paragraphView(tokens)
                     }
                 }
+                .scrollTargetLayout()
                 .padding(.horizontal, 30)
                 .padding(.top, 26)
                 .padding(.bottom, 40)
@@ -281,14 +324,20 @@ struct ReaderView: View {
                                 contentHeight: content.size.height))
                     })
             }
+            .scrollPosition(id: $scrollParagraph, anchor: .top)
             .coordinateSpace(name: Self.scrollSpace)
             .onPreferenceChange(ScrollMetricsKey.self) { metrics in
                 updateScrollProgress(metrics, viewportHeight: outer.size.height)
             }
-        }
-        .onAppear {
-            if scrollParagraphs.isEmpty {
-                scrollParagraphs = ReaderPage.allParagraphs(story: story)
+            .task {
+                if scrollParagraphs.isEmpty {
+                    scrollParagraphs = ReaderPage.allParagraphs(story: story)
+                }
+                // Jump to the saved paragraph once the content has laid out.
+                guard let resumedAt, resumedAt < scrollParagraphs.count else { return }
+                try? await Task.sleep(for: .milliseconds(80))
+                proxy.scrollTo(resumedAt, anchor: .top)
+            }
             }
         }
     }
@@ -302,12 +351,12 @@ struct ReaderView: View {
         let scrollable = metrics.contentHeight - viewportHeight
         if scrollable <= 1 {
             scrollProgress = 1
-            finishIfNeeded()
+            reachEnd()
             return
         }
         let progress = min(1, max(0, -metrics.offset / scrollable))
         scrollProgress = progress
-        if progress >= 0.99 { finishIfNeeded() }
+        if progress >= 0.99 { reachEnd() }
     }
 
     private var pagedReader: some View {
@@ -330,10 +379,14 @@ struct ReaderView: View {
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .onChange(of: pageIndex) {
-            if pageIndex == pages.count - 1 { finishIfNeeded() }
+            if pageIndex == pages.count - 1 { reachEnd() }
+        }
+        .onChange(of: model.fontSize) {
+            // Re-pagination can shrink the page count; stay on a real page.
+            pageIndex = min(pageIndex, pages.count - 1)
         }
         .onAppear {
-            if pages.count == 1 { finishIfNeeded() }
+            if pages.count == 1 { reachEnd() }
         }
     }
 
@@ -427,8 +480,82 @@ struct ReaderView: View {
         }
     }
 
+    // MARK: Resume position
+
+    /// The paragraph currently at the top of the reader (either mode).
+    private var currentParagraph: Int {
+        switch model.readingMode {
+        case .paged: return pages.indices.contains(pageIndex) ? pages[pageIndex].firstParagraph : 0
+        case .scroll: return max(0, scrollParagraph ?? 0)
+        }
+    }
+
+    /// Picks up where the last visit left off: the page holding the saved
+    /// paragraph, or (scroll mode) the paragraph itself — see `scrollReader`.
+    private func restorePosition() {
+        guard resumedAt == nil, let saved = model.readingPosition(storyIdx: story.index),
+              saved < story.paragraphs.count else { return }
+        resumedAt = saved
+        pageIndex = pages.lastIndex { $0.firstParagraph <= saved } ?? 0
+        withAnimation(.spring(response: 0.4).delay(0.4)) { showResumePill = true }
+    }
+
+    /// Finished stories start from the top next time.
+    private func savePosition() {
+        model.saveReadingPosition(reachedEnd ? nil : currentParagraph, storyIdx: story.index)
+    }
+
+    private func startOver() {
+        resumedAt = nil
+        withAnimation { scrollParagraph = -1 }
+        withAnimation { pageIndex = 0 }
+        model.saveReadingPosition(nil, storyIdx: story.index)
+        withAnimation(.easeOut(duration: 0.25)) { showResumePill = false }
+    }
+
+    /// "Resumed where you left off · Start over" — shown briefly on reopen.
+    private var resumePill: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "bookmark.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+            Text("Resumed where you left off")
+                .font(Theme.latinSerif(13))
+                .foregroundStyle(Theme.textHeading)
+            Button("Start over", action: startOver)
+                .font(Theme.latinSerif(13, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(Theme.card)
+                .shadow(color: .black.opacity(0.15), radius: 10, y: 4))
+        .padding(.bottom, model.readingMode == .paged ? 70 : 24)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .task {
+            try? await Task.sleep(for: .seconds(6))
+            withAnimation(.easeOut(duration: 0.25)) { showResumePill = false }
+        }
+    }
+
+    /// Active reading time a story needs before it counts as read: about two
+    /// words a second, never under 15 s — so opening a short story (which
+    /// "reaches the end" immediately) doesn't mark the day as read.
+    private var minimumReadSeconds: TimeInterval {
+        max(15, Double(story.wordCount) / 2)
+    }
+
+    private func reachEnd() {
+        reachedEnd = true
+        model.saveReadingPosition(nil, storyIdx: story.index)
+        finishIfNeeded()
+    }
+
+    /// Records the read once the end is reached *and* enough time was spent.
     private func finishIfNeeded() {
-        guard !didFinish else { return }
+        guard !didFinish, reachedEnd, timerElapsed >= minimumReadSeconds else { return }
         didFinish = true
         let total = max(1, story.wordCount)
         let pct = max(0, 100 - Int((Double(tappedWords.count) / Double(total) * 100).rounded()))
@@ -519,7 +646,8 @@ struct DottedUnderline: View {
 /// A page of story content: paragraphs of tappable tokens.
 struct ReaderPage: Identifiable {
     struct Token: Identifiable, Hashable {
-        /// Position-stable id: page/paragraph/offset.
+        /// Story-wide paragraph/offset — independent of pagination, so reveals
+        /// survive a font-size change and switching reading modes.
         let id: String
         /// What is drawn (word plus trailing punctuation).
         let display: String
@@ -528,6 +656,8 @@ struct ReaderPage: Identifiable {
     }
 
     let index: Int
+    /// Story-wide index of this page's first paragraph.
+    let firstParagraph: Int
     let paragraphs: [[Token]]
 
     var id: Int { index }
@@ -551,29 +681,31 @@ struct ReaderPage: Identifiable {
         }
         if !current.isEmpty { pages.append(current) }
 
+        var paraIdx = 0
         return pages.enumerated().map { pageIdx, paragraphs in
             ReaderPage(
                 index: pageIdx,
-                paragraphs: paragraphs.enumerated().map { paraIdx, text in
-                    tokenize(text, pageIdx: pageIdx, paraIdx: paraIdx)
+                firstParagraph: paraIdx,
+                paragraphs: paragraphs.map { text in
+                    defer { paraIdx += 1 }
+                    return tokenize(text, paraIdx: paraIdx)
                 })
         }
     }
 
     /// Tokenizes every paragraph of a story into one flat list, for the
-    /// continuous scroll reader (no pagination). Ids stay globally unique
-    /// because the paragraph index spans the whole story.
+    /// continuous scroll reader (no pagination). Same ids as `paginate`.
     static func allParagraphs(story: Story) -> [[Token]] {
         story.paragraphs.enumerated().map { paraIdx, text in
-            tokenize(text, pageIdx: 0, paraIdx: paraIdx)
+            tokenize(text, paraIdx: paraIdx)
         }
     }
 
-    private static func tokenize(_ paragraph: String, pageIdx: Int, paraIdx: Int) -> [Token] {
+    private static func tokenize(_ paragraph: String, paraIdx: Int) -> [Token] {
         paragraph.split(separator: " ").enumerated().map { offset, chunk in
             let display = String(chunk)
             return Token(
-                id: "\(pageIdx)-\(paraIdx)-\(offset)",
+                id: "\(paraIdx)-\(offset)",
                 display: display,
                 teluguWord: TeluguText.words(in: display).first)
         }

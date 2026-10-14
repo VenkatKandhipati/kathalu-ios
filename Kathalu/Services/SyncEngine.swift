@@ -93,9 +93,14 @@ final class SyncEngine {
         }
     }
 
-    func pushReadingDay(storyIdx: Int, pct: Int?) {
+    func pushReadingDay() {
         Task { [api] in
             await self.push { try await api.markReadingDay() }
+        }
+    }
+
+    func pushSession(storyIdx: Int, pct: Int?) {
+        Task { [api] in
             await self.push { try await api.recordSession(ReadingSessionIn(storyIdx: storyIdx, pct: pct)) }
         }
     }

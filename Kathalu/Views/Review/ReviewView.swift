@@ -60,6 +60,15 @@ struct ReviewView: View {
             #endif
             buildSessionIfNeeded()
         }
+        .onChange(of: model.widgetGradedWords) {
+            // Cards graded on the Home Screen widget leave the open session.
+            let graded = model.widgetGradedWords.filter { !(model.data.cards[$0]?.isDue ?? true) }
+            let frontGraded = queue.first.map { graded.contains($0.telugu) } ?? false
+            let before = queue.count
+            queue.removeAll { graded.contains($0.telugu) }
+            done += before - queue.count
+            if frontGraded { revealed = false }
+        }
     }
 
     private var wordsContent: some View {

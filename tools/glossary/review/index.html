@@ -1,0 +1,621 @@
+<title>Kathalu Glossary Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Telugu:wght@400;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column of word cards under a sticky filter bar; the
+   Telugu word sits in its own column beside the meaning on wide screens and
+   stacks above it on phones. Palette is the Kathalu app's own Theme. */
+:root {
+  --bg: #F7F3EA;
+  --card: #FEFCF7;
+  --border: #EAE1CF;
+  --heading: #3A2A10;
+  --body: #2A2622;
+  --muted: #7A6E58;
+  --faint: #A79C89;
+  --accent: #B5531A;
+  --accent-soft: rgba(181, 83, 26, 0.10);
+  --phonetic: #8A6000;
+  --good: #4E7F30;
+  --good-soft: rgba(78, 127, 48, 0.12);
+  --warn: #8C7520;
+  --warn-soft: rgba(154, 132, 40, 0.14);
+  --bad: #B5451A;
+  --bad-soft: rgba(181, 69, 26, 0.10);
+  --mark: rgba(200, 169, 110, 0.38);
+  --font-te: "Noto Serif Telugu", "Kohinoor Telugu", "Telugu Sangam MN", serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1A1A1A; --card: #262421; --border: #3D3A34; --heading: #E8DCC8; --body: #E0DDD6;
+    --muted: #A89F8C; --faint: #8A8272; --accent: #D4743A; --accent-soft: rgba(212, 116, 58, 0.16);
+    --phonetic: #D4A830; --good: #8AB450; --good-soft: rgba(138, 180, 80, 0.16); --warn: #D4B65A;
+    --warn-soft: rgba(212, 182, 90, 0.16); --bad: #E0734F; --bad-soft: rgba(224, 115, 79, 0.16);
+    --mark: rgba(212, 168, 48, 0.30); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1A1A1A; --card: #262421; --border: #3D3A34; --heading: #E8DCC8; --body: #E0DDD6;
+  --muted: #A89F8C; --faint: #8A8272; --accent: #D4743A; --accent-soft: rgba(212, 116, 58, 0.16);
+  --phonetic: #D4A830; --good: #8AB450; --good-soft: rgba(138, 180, 80, 0.16); --warn: #D4B65A;
+  --warn-soft: rgba(212, 182, 90, 0.16); --bad: #E0734F; --bad-soft: rgba(224, 115, 79, 0.16);
+  --mark: rgba(212, 168, 48, 0.30); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--body); font: 15px/1.5 var(--font-ui); }
+.wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; }
+.te { font-family: var(--font-te); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+header.top { padding-block: 28px 18px; display: grid; gap: 14px; }
+.eyebrow { display: flex; align-items: baseline; gap: 8px; color: var(--muted); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+.eyebrow .te { text-transform: none; letter-spacing: 0; font-size: 16px; color: var(--accent); font-weight: 700; }
+h1 { margin: 0; font: 600 clamp(26px, 4vw, 34px)/1.15 var(--font-serif); color: var(--heading); text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+.progress { display: grid; gap: 8px; }
+.progress-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.progress-line strong { color: var(--heading); }
+.tally { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); }
+.tally span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.tally .t-ok::before { background: var(--good); }
+.tally .t-fix::before { background: var(--accent); }
+.tally .t-flag::before { background: var(--warn); }
+.bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; transition: width .3s ease; }
+.bar .b-ok { background: var(--good); } .bar .b-fix { background: var(--accent); } .bar .b-flag { background: var(--warn); }
+
+/* Controls */
+.controls { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px 12px; border-bottom: 1px solid var(--border); display: grid; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select#story, input#search { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; min-width: 0; }
+select#story { flex: 1 1 260px; }
+input#search { flex: 1 1 200px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--border); background: var(--card); border-radius: 99px; padding: 6px 12px; font-size: 13.5px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 600; color: var(--heading); margin-left: 4px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip[aria-pressed="true"] b { color: #fff; }
+
+.banner { margin: 12px 0 0; padding: 10px 14px; border-radius: 10px; font-size: 14px; background: var(--warn-soft); color: var(--body); }
+.banner.info { background: var(--accent-soft); }
+
+/* Cards */
+main { display: grid; gap: 12px; padding-block: 16px 8px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; display: grid; grid-template-columns: minmax(150px, 190px) minmax(0, 1fr); gap: 18px; }
+.card.is-ok { border-color: color-mix(in srgb, var(--good) 45%, var(--border)); }
+.card.is-fixed { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.card.is-flag { border-color: color-mix(in srgb, var(--warn) 55%, var(--border)); }
+.word-col { display: grid; align-content: start; gap: 2px; min-width: 0; }
+.word { font: 700 28px/1.35 var(--font-te); color: var(--heading); overflow-wrap: anywhere; }
+.trans { font: italic 400 16px/1.3 var(--font-serif); color: var(--phonetic); overflow-wrap: anywhere; }
+.badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.badge { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--border); color: var(--muted); }
+.badge.medium { background: var(--warn-soft); color: var(--warn); }
+.badge.low { background: var(--bad-soft); color: var(--bad); }
+.badge.frag { background: var(--accent-soft); color: var(--accent); }
+.body { display: grid; gap: 8px; min-width: 0; }
+.context { margin: 0; font: 400 16px/1.7 var(--font-te); color: var(--body); }
+.context mark, .context-trans mark { background: var(--mark); color: var(--heading); border-radius: 4px; padding: 0 2px; }
+.sentence { display: grid; gap: 2px; }
+.context-trans { margin: 0; font: italic 400 15.5px/1.55 var(--font-serif); color: var(--phonetic); }
+.context-trans mark { font-style: italic; }
+.label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-bottom: 2px; }
+.meaning { margin: 0; font: 600 19px/1.35 var(--font-serif); color: var(--heading); }
+.meaning .was { font-weight: 400; color: var(--faint); font-size: 15px; margin-left: 6px; }
+.base, .note { margin: 0; font-size: 14px; color: var(--muted); }
+.base .te { color: var(--body); font-size: 15px; }
+.base i { font-family: var(--font-serif); color: var(--phonetic); }
+.old { margin: 0; font-size: 13.5px; color: var(--faint); }
+.old s { color: var(--bad); text-decoration-thickness: 1px; }
+.old.same s { color: var(--muted); text-decoration: none; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.btn { border: 1px solid var(--border); background: transparent; border-radius: 10px; padding: 7px 13px; font-size: 14px; font-weight: 500; }
+.btn:hover:not(:disabled) { background: var(--accent-soft); }
+.btn.good { border-color: var(--good); color: var(--good); }
+.btn.good:hover:not(:disabled) { background: var(--good-soft); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
+.btn.quiet { border-color: transparent; color: var(--muted); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.status { font-size: 13.5px; font-weight: 600; padding: 4px 10px; border-radius: 99px; }
+.status.ok { background: var(--good-soft); color: var(--good); }
+.status.fixed { background: var(--accent-soft); color: var(--accent); }
+.status.flag { background: var(--warn-soft); color: var(--warn); }
+.comment { flex-basis: 100%; margin: 0; font-size: 14px; color: var(--body); }
+.editor { display: grid; gap: 8px; }
+.editor input { width: 100%; background: var(--bg); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 12px; font: 400 17px/1.3 var(--font-serif); }
+.editor .hint { font-size: 12.5px; color: var(--faint); margin: 0; }
+
+.modes { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--card); }
+.modes button { border: 0; background: transparent; padding: 7px 12px; font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.modes button[aria-pressed="true"] { background: var(--heading); color: var(--bg); }
+.left { margin-left: auto; font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* One-at-a-time: the decision buttons live in a bar pinned to the bottom of
+   the screen, so they never move between words. */
+body.focus main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+.actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--border); padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.actionbar .inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: auto auto 1fr 1.6fr; gap: 8px; align-items: stretch; }
+.actionbar .btn { padding: 12px 14px; font-size: 15px; }
+.actionbar .btn.good { background: var(--good); border-color: var(--good); color: #fff; font-weight: 600; font-size: 16px; }
+.actionbar .btn.good:hover:not(:disabled) { background: var(--good); filter: brightness(1.08); }
+.actionbar .keys { grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--faint); }
+@media (max-width: 640px) { .actionbar .keys { display: none; } .actionbar .btn { padding: 12px 10px; font-size: 14px; } }
+
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
+.more { display: block; margin: 8px auto 40px; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--heading); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; max-width: calc(100% - 32px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+
+@media (max-width: 640px) {
+  .card { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 14px; }
+  .word-col { grid-template-columns: auto 1fr; align-items: baseline; column-gap: 10px; }
+  .badges { grid-column: 1 / -1; margin-top: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow"><span class="te">కథలు</span> Kathalu · dictionary</div>
+    <h1>Glossary review</h1>
+    <p class="lede">Every word in the stories, with the meaning Claude drafted from its sentence. Mark the ones that are right, fix the ones that aren't, and flag anything you're unsure of. In <b>One at a time</b>, the buttons stay at the bottom of the screen — keep tapping <b>Looks good</b> to move through. Your choices save as you go.</p>
+    <div class="progress" aria-live="polite">
+      <div class="progress-line">
+        <span><strong id="p-done">0</strong> of <strong id="p-total">811</strong> words checked</span>
+        <span class="tally"><span class="t-ok" id="t-ok">0 look good</span><span class="t-fix" id="t-fix">0 fixed</span><span class="t-flag" id="t-flag">0 flagged</span></span>
+      </div>
+      <div class="bar" aria-hidden="true"><i class="b-ok" id="b-ok"></i><i class="b-fix" id="b-fix"></i><i class="b-flag" id="b-flag"></i></div>
+    </div>
+    <p class="banner info" id="banner">Connecting to your saved review…</p>
+  </header>
+
+  <div class="controls">
+    <div class="row">
+      <label class="sr" for="story" hidden>Story</label>
+      <select id="story" aria-label="Story"></select>
+      <input id="search" type="search" placeholder="Search Telugu, romanization or English" aria-label="Search words">
+    </div>
+    <div class="chips" role="group" aria-label="Show">
+      <button class="chip" data-filter="needs" aria-pressed="true">Needs a look<b id="c-needs">0</b></button>
+      <button class="chip" data-filter="unreviewed" aria-pressed="false">Not checked<b id="c-unreviewed">0</b></button>
+      <button class="chip" data-filter="fixed" aria-pressed="false">Fixed<b id="c-fixed">0</b></button>
+      <button class="chip" data-filter="flagged" aria-pressed="false">Flagged<b id="c-flagged">0</b></button>
+      <button class="chip" data-filter="all" aria-pressed="false">All<b id="c-all">0</b></button>
+    </div>
+    <div class="row">
+      <div class="modes" role="group" aria-label="Layout">
+        <button data-mode="focus" aria-pressed="true">One at a time</button>
+        <button data-mode="list" aria-pressed="false">List</button>
+      </div>
+      <span class="left" id="left"></span>
+    </div>
+  </div>
+
+  <main id="list"><p class="empty">Loading the word list…</p></main>
+  <button class="btn more" id="more" hidden>Show more</button>
+</div>
+<nav class="actionbar" id="bar" hidden aria-label="Decide this word">
+  <div class="inner">
+    <button class="btn quiet" data-bar="back" title="Undo your last choice (Backspace)">↶ Back</button>
+    <button class="btn" data-bar="flag" title="N">Not sure</button>
+    <button class="btn" data-bar="edit" title="F">Fix meaning</button>
+    <button class="btn good" data-bar="ok" title="Space or Enter">Looks good ✓</button>
+    <div class="keys">Keyboard: Space = looks good · F = fix · N = not sure · Backspace = back</div>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  const PAGE = 40;
+  const state = {
+    data: null, byId: new Map(), reviews: new Map(),
+    story: "all", filter: "needs", q: "", limit: PAGE,
+    editing: null, draft: "", pending: new Set(), dbOk: null,
+    mode: "focus", history: [], current: null, shownAt: 0,
+  };
+  let col = null;
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+  // Per-viewer conveniences only (remembered story + filter).
+  try {
+    const saved = JSON.parse(localStorage.getItem("kgr-ui-2") || "{}");
+    if (saved.story) state.story = saved.story;
+    if (saved.filter) state.filter = saved.filter;
+    if (saved.mode) state.mode = saved.mode;
+  } catch {}
+  const remember = () => { try { localStorage.setItem("kgr-ui-2", JSON.stringify({ story: state.story, filter: state.filter, mode: state.mode })); } catch {} };
+
+  function setBanner(text, kind) {
+    const b = $("#banner");
+    b.hidden = !text;
+    b.textContent = text || "";
+    b.className = "banner" + (kind === "info" ? " info" : "");
+  }
+
+  let toastTimer;
+  function toast(text) {
+    const t = $("#toast");
+    t.textContent = text; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
+  }
+
+  function errText(err) {
+    switch (err && err.code) {
+      case "invalid_argument": return "This view can read the review but not change it. Ask the owner for edit access.";
+      case "resource_exhausted": return "Too many saves at once. Wait a moment, then try again.";
+      case "quota_exceeded": return "The review storage is full, so this choice wasn't saved.";
+      case "revoked": return "Saving was turned off for this page.";
+      default: return "That choice didn't save. Check your connection and try again.";
+    }
+  }
+
+  // ---------- data ----------
+  async function boot() {
+    try {
+      const res = await fetch("glossary.json");
+      if (!res.ok) throw new Error(res.status);
+      state.data = await res.json();
+    } catch {
+      $("#list").innerHTML = '<p class="empty">The word list didn\'t load. Reload the page to try again.</p>';
+      return;
+    }
+    for (const e of state.data.entries) {
+      e._search = fold([e.word, e.trans, e.meaning, e.base, e.baseTrans, e.baseMeaning, e.mymemory].join(" "));
+      state.byId.set(e.id, e);
+    }
+    if (state.story !== "all" && !state.data.stories[+state.story]) state.story = "all";
+    render();
+    connectDb();
+  }
+
+  async function connectDb() {
+    let db = null;
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch { db = null; }
+    if (!db) {
+      state.dbOk = false;
+      setBanner("Saving isn't available in this view. Open this page in Claude, signed in, to record your review.", "warn");
+      render();
+      return;
+    }
+    col = db.collection("reviews");
+    col.onSnapshot((snap) => {
+      const m = new Map();
+      for (const d of snap.docs) if (d.exists) m.set(d.id, d.data());
+      // Keep in-flight choices as shown until their write settles.
+      for (const id of state.pending) { if (state.reviews.has(id)) m.set(id, state.reviews.get(id)); else m.delete(id); }
+      state.reviews = m;
+      if (state.dbOk !== true) { state.dbOk = true; setBanner("", ""); }
+      render();
+    }, (err) => {
+      state.dbOk = false;
+      setBanner(errText(err), "warn");
+      render();
+    });
+  }
+
+  // ---------- derive ----------
+  const inStory = (e) => state.story === "all" || e.stories.includes(+state.story);
+
+  function matches(e, filter) {
+    const r = state.reviews.get(e.id);
+    switch (filter) {
+      case "needs": return !r && (e.disputed || e.confidence !== "high");
+      case "unreviewed": return !r;
+      case "fixed": return r && r.status === "fixed";
+      case "flagged": return r && r.status === "flag";
+      default: return true;
+    }
+  }
+
+  function visible() {
+    const q = fold(state.q.trim());
+    const list = state.data.entries.filter((e) => inStory(e) && matches(e, state.filter) && (!q || e._search.includes(q)));
+    if (state.filter === "needs") {
+      const rank = { low: 0, medium: 1, high: 2 };
+      return list.slice().sort((a, b) => rank[a.confidence] - rank[b.confidence]);
+    }
+    return list;
+  }
+
+  // ---------- render ----------
+  function render() {
+    if (!state.data) return;
+    const entries = state.data.entries;
+    const all = entries.length;
+    let ok = 0, fixed = 0, flag = 0;
+    for (const r of state.reviews.values()) {
+      if (r.status === "ok") ok++; else if (r.status === "fixed") fixed++; else if (r.status === "flag") flag++;
+    }
+    const done = ok + fixed + flag;
+    $("#p-done").textContent = done;
+    $("#p-total").textContent = all;
+    $("#t-ok").textContent = `${ok} look good`;
+    $("#t-fix").textContent = `${fixed} fixed`;
+    $("#t-flag").textContent = `${flag} flagged`;
+    $("#b-ok").style.width = `${(ok / all) * 100}%`;
+    $("#b-fix").style.width = `${(fixed / all) * 100}%`;
+    $("#b-flag").style.width = `${(flag / all) * 100}%`;
+
+    // Story picker with per-story progress.
+    const sel = $("#story");
+    const storyOpts = [`<option value="all">All 8 stories · ${done} of ${all} checked</option>`].concat(
+      state.data.stories.map((s) => {
+        const words = entries.filter((e) => e.stories.includes(s.index));
+        const checked = words.filter((e) => state.reviews.has(e.id)).length;
+        return `<option value="${s.index}">${esc(s.titleEn)} · ${checked} of ${words.length} checked</option>`;
+      }));
+    sel.innerHTML = storyOpts.join("");
+    sel.value = state.story;
+
+    // Chip counts follow the story filter (not the search).
+    const scoped = entries.filter(inStory);
+    for (const f of ["needs", "unreviewed", "fixed", "flagged", "all"]) {
+      $(`#c-${f}`).textContent = scoped.filter((e) => matches(e, f)).length;
+    }
+    document.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.filter === state.filter)));
+
+    document.querySelectorAll(".modes button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+    document.body.classList.toggle("focus", state.mode === "focus");
+    const list = visible();
+    const more = $("#more");
+    if (state.mode === "focus") {
+      // The first unchecked word in the current filter; deciding it brings up the next.
+      const queue = list.filter((e) => !state.reviews.has(e.id));
+      const cur = queue[0] || null;
+      if ((cur && cur.id) !== state.current) { state.current = cur && cur.id; state.shownAt = performance.now(); window.scrollTo({ top: 0 }); }
+      $("#list").innerHTML = cur ? card(cur) : `<p class="empty">${emptyText(true)}</p>`;
+      $("#left").textContent = queue.length ? `${queue.length} left to check` : "";
+      more.hidden = true;
+      renderBar(cur);
+    } else {
+      const shown = list.slice(0, state.limit);
+      $("#list").innerHTML = shown.length ? shown.map(card).join("") : `<p class="empty">${emptyText()}</p>`;
+      $("#left").textContent = "";
+      more.hidden = list.length <= state.limit;
+      more.textContent = `Show ${Math.min(PAGE, list.length - state.limit)} more (${list.length - state.limit} left)`;
+      $("#bar").hidden = true;
+    }
+
+    if (state.editing) {
+      const input = document.getElementById(`${state.editing.mode}-${state.editing.id}`);
+      if (input && document.activeElement !== input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+    }
+  }
+
+  function renderBar(cur) {
+    const bar = $("#bar");
+    bar.hidden = false;
+    const editing = !!state.editing;
+    const canWrite = state.dbOk === true && cur && !state.pending.has(cur.id) && !editing;
+    for (const b of bar.querySelectorAll("[data-bar]")) {
+      b.disabled = b.dataset.bar === "back" ? !(state.dbOk === true && state.history.length && !editing) : !canWrite;
+    }
+  }
+
+  function emptyText(focus) {
+    if (state.q.trim()) return "No words match that search here.";
+    if (focus) return state.filter === "needs"
+      ? "All done — nothing left that needs a look. The remaining words match the app's old meaning or only differ in wording, so they can ship as drafted."
+      : "Every word here has been checked. Pick another story, or switch to List to look back.";
+    switch (state.filter) {
+      case "needs": return "Nothing left that needs a look here. The rest match what the app shows today or only differ in wording — you can stop, or skim them under “Not checked”.";
+      case "unreviewed": return "Every word here has been checked.";
+      case "fixed": return "No fixes yet.";
+      case "flagged": return "Nothing flagged.";
+      default: return "No words here.";
+    }
+  }
+
+  function highlight(text, word) {
+    return String(text || "").split(/([ఀ-౿]+)/).map((p) => (p === word ? `<mark>${esc(p)}</mark>` : esc(p))).join("");
+  }
+
+  // Mark the word's romanization inside the romanized sentence (whole words only;
+  // split on anything that isn't a letter or combining mark, so ā, ṇ etc. stay in).
+  function highlightTrans(text, wordTrans) {
+    return String(text || "").split(/([^\p{L}\p{M}]+)/u).map((p) => (p === wordTrans ? `<mark>${esc(p)}</mark>` : esc(p))).join("");
+  }
+
+  function card(e) {
+    const r = state.reviews.get(e.id);
+    const ed = state.editing && state.editing.id === e.id ? state.editing.mode : null;
+    const busy = state.pending.has(e.id);
+    const canWrite = state.dbOk === true && !busy;
+    const dis = canWrite ? "" : " disabled";
+    const stories = e.stories.map((i) => state.data.stories[i] && state.data.stories[i].titleEn).filter(Boolean);
+
+    const badges = [
+      e.confidence === "low" ? '<span class="badge low">Unclear</span>' : "",
+      e.confidence === "medium" ? '<span class="badge medium">Check closely</span>' : "",
+      e.pos === "fragment" ? '<span class="badge frag">Split word</span>' : "",
+      e.disputed ? '<span class="badge medium">MyMemory disagrees</span>' : "",
+      `<span class="badge">${esc(stories.length > 1 ? `${stories.length} stories` : stories[0] || "")}</span>`,
+    ].join("");
+
+    const meaning = r && r.status === "fixed"
+      ? `${esc(r.meaning)}<s class="was">${esc(e.meaning)}</s>`
+      : esc(e.meaning);
+
+    const base = e.base
+      ? `<p class="base">from <span class="te">${esc(e.base)}</span> <i>${esc(e.baseTrans)}</i> · ${esc(e.baseMeaning)}</p>` : "";
+    const note = e.note ? `<p class="note">${esc(e.note)}</p>` : "";
+    const old = e.mymemory
+      ? `<p class="old${fold(e.mymemory) === fold(e.meaning) ? " same" : ""}">In the app today: <s>${esc(e.mymemory)}</s></p>`
+      : "";
+
+    let actions;
+    if (ed === "edit") {
+      actions = `<div class="editor">
+        <input id="edit-${e.id}" data-draft value="${esc(state.draft)}" aria-label="Correct meaning for ${esc(e.word)}">
+        <p class="hint">Enter to save · Esc to cancel</p>
+        <div class="actions"><button class="btn primary" data-act="save-edit" data-id="${e.id}"${dis}>Save meaning</button><button class="btn quiet" data-act="cancel" data-id="${e.id}">Cancel</button></div>
+      </div>`;
+    } else if (ed === "flag") {
+      actions = `<div class="editor">
+        <input id="flag-${e.id}" data-draft value="${esc(state.draft)}" placeholder="What looks off? (optional)" aria-label="Note for ${esc(e.word)}">
+        <div class="actions"><button class="btn primary" data-act="save-flag" data-id="${e.id}"${dis}>Flag for Claude</button><button class="btn quiet" data-act="cancel" data-id="${e.id}">Cancel</button></div>
+      </div>`;
+    } else if (state.mode === "focus") {
+      actions = "";
+    } else if (r) {
+      const label = r.status === "ok" ? "Looks good" : r.status === "fixed" ? "Fixed" : "Flagged";
+      const cls = r.status === "flag" ? "flag" : r.status;
+      actions = `<div class="actions">
+        <span class="status ${cls}">${label}</span>
+        <button class="btn quiet" data-act="edit" data-id="${e.id}"${dis}>Edit meaning</button>
+        <button class="btn quiet" data-act="undo" data-id="${e.id}"${dis}>Undo</button>
+        ${r.status === "flag" && r.comment ? `<p class="comment">“${esc(r.comment)}”</p>` : ""}
+      </div>`;
+    } else {
+      actions = `<div class="actions">
+        <button class="btn good" data-act="ok" data-id="${e.id}"${dis}>Looks good</button>
+        <button class="btn" data-act="edit" data-id="${e.id}"${dis}>Fix meaning</button>
+        <button class="btn quiet" data-act="flag" data-id="${e.id}"${dis}>Not sure</button>
+      </div>`;
+    }
+
+    const cls = r ? ` is-${r.status === "flag" ? "flag" : r.status}` : "";
+    return `<article class="card${cls}" data-id="${e.id}">
+      <div class="word-col">
+        <div class="word te" lang="te">${esc(e.word)}</div>
+        <div class="trans">${esc(e.trans)}</div>
+        <div class="badges">${badges}</div>
+      </div>
+      <div class="body">
+        <div class="sentence">
+          <p class="context" lang="te">${highlight(e.context, e.word)}</p>
+          ${e.contextTrans ? `<p class="context-trans">${highlightTrans(e.contextTrans, e.trans)}</p>` : ""}
+        </div>
+        <div><div class="label">Meaning</div><p class="meaning">${meaning}</p></div>
+        ${base}${note}${old}
+        ${actions}
+      </div>
+    </article>`;
+  }
+
+  // ---------- writes ----------
+  async function save(e, body) {
+    if (!col || state.pending.has(e.id)) return;
+    state.pending.add(e.id);
+    const doc = { word: e.word, claudeMeaning: e.meaning, ...body, updatedAt: new Date().toISOString() };
+    const prev = state.reviews.get(e.id);
+    state.reviews.set(e.id, doc); // optimistic: the next word shows right away
+    state.editing = null;
+    if (!prev) state.history.push(e.id);
+    render();
+    try {
+      await col.doc(e.id).set(doc);
+    } catch (err) {
+      if (prev) state.reviews.set(e.id, prev); else { state.reviews.delete(e.id); state.history = state.history.filter((id) => id !== e.id); }
+      toast(errText(err));
+    } finally {
+      state.pending.delete(e.id);
+      render();
+    }
+  }
+
+  async function undo(e) {
+    if (!col || state.pending.has(e.id)) return;
+    state.pending.add(e.id);
+    const prev = state.reviews.get(e.id);
+    state.reviews.delete(e.id);
+    state.history = state.history.filter((id) => id !== e.id);
+    render();
+    try { await col.doc(e.id).delete(); } catch (err) { if (prev) state.reviews.set(e.id, prev); toast(errText(err)); }
+    finally { state.pending.delete(e.id); render(); }
+  }
+
+  // ---------- events ----------
+  $("#list").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[data-act]");
+    if (!b || b.disabled) return;
+    const e = state.byId.get(b.dataset.id);
+    if (!e) return;
+    const r = state.reviews.get(e.id);
+    switch (b.dataset.act) {
+      case "ok": return save(e, { status: "ok" });
+      case "edit":
+        state.editing = { id: e.id, mode: "edit" };
+        state.draft = (r && r.status === "fixed" && r.meaning) || e.meaning;
+        return render();
+      case "flag":
+        state.editing = { id: e.id, mode: "flag" };
+        state.draft = (r && r.comment) || "";
+        return render();
+      case "cancel":
+        state.editing = null;
+        return render();
+      case "save-edit": {
+        const v = state.draft.trim();
+        if (!v) return toast("Type a meaning first, or press Cancel.");
+        return save(e, v === e.meaning ? { status: "ok" } : { status: "fixed", meaning: v });
+      }
+      case "save-flag": return save(e, { status: "flag", comment: state.draft.trim() });
+      case "undo": return undo(e);
+    }
+  });
+  $("#list").addEventListener("input", (ev) => { if (ev.target.matches("[data-draft]")) state.draft = ev.target.value; });
+  $("#list").addEventListener("keydown", (ev) => {
+    if (!ev.target.matches("[data-draft]")) return;
+    if (ev.key === "Enter") { ev.preventDefault(); const s = ev.target.closest(".card").querySelector('[data-act^="save"]'); if (s) s.click(); }
+    if (ev.key === "Escape") { state.editing = null; render(); }
+  });
+  $("#story").addEventListener("change", (ev) => { state.story = ev.target.value; state.limit = PAGE; state.editing = null; remember(); render(); });
+  document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
+    state.filter = c.dataset.filter; state.limit = PAGE; state.editing = null; remember(); render();
+  }));
+  let searchTimer;
+  $("#search").addEventListener("input", (ev) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.q = ev.target.value; state.limit = PAGE; render(); }, 150);
+  });
+  $("#more").addEventListener("click", () => { state.limit += PAGE; render(); });
+  document.querySelectorAll(".modes button").forEach((b) => b.addEventListener("click", () => {
+    state.mode = b.dataset.mode; state.editing = null; remember(); render();
+  }));
+
+  function barAct(act) {
+    if (state.mode !== "focus" || state.editing) return;
+    if (act === "back") {
+      const id = state.history[state.history.length - 1];
+      const e = id && state.byId.get(id);
+      return e ? undo(e) : undefined;
+    }
+    const e = state.current && state.byId.get(state.current);
+    if (!e || state.pending.has(e.id) || state.dbOk !== true) return;
+    // A word that just appeared can't be approved by a double-tap meant for the last one.
+    if (act === "ok" && performance.now() - state.shownAt < 300) return;
+    if (act === "ok") return save(e, { status: "ok" });
+    state.editing = { id: e.id, mode: act };
+    state.draft = act === "edit" ? e.meaning : "";
+    render();
+  }
+  $("#bar").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[data-bar]");
+    if (b && !b.disabled) barAct(b.dataset.bar);
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (state.mode !== "focus" || state.editing || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (ev.target.matches("input, select, textarea")) return;
+    const act = { " ": "ok", Enter: "ok", f: "edit", F: "edit", n: "flag", N: "flag", Backspace: "back" }[ev.key];
+    if (!act) return;
+    ev.preventDefault();
+    barAct(act);
+  });
+
+  boot();
+})();
+</script>

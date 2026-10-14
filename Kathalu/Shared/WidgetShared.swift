@@ -20,17 +20,19 @@ enum WidgetShared {
         static let flashcard = "KathaluFlashcard"
     }
 
-    /// App Group keys. The first three are app-written; the flash* pair is
+    /// App Group keys. The first three are app-written; the flash* keys are
     /// owned by the flashcard widget's buttons.
     enum Key {
         /// `[String]` of "yyyy-MM-dd" reading days (DayStamp.description).
         static let readDays = "readDays"
         /// `[String: Int]` story index → best proficiency %.
         static let storyBest = "storyBest"
-        /// JSON `[FlashcardSnapshot]`, due cards first.
+        /// JSON `[FlashcardSnapshot]` in Review-tab order (due, then new),
+        /// followed by upcoming cards so the widget stays right past midnight.
         static let flashcards = "flashcards"
-        static let flashPosition = "flashPosition"
         static let flashRevealed = "flashRevealed"
+        /// JSON `[FlashcardGrades.Grade]` — Hard/Good taps the app hasn't applied yet.
+        static let flashGrades = "flashGrades"
         /// `Int` taps on the Lock Screen word (widget-owned); each one picks another word.
         static let lockWordTaps = "lockWordTaps"
     }
@@ -54,6 +56,40 @@ struct FlashcardSnapshot: Codable, Hashable {
     let telugu: String
     let trans: String
     let meaning: String?
+    /// "yyyy-MM-dd" (DayStamp.description); the widget shows cards due today.
+    var nextReview: String?
+}
+
+/// Grades given on the flashcard widget, logged by the widget and applied by
+/// the app (same SM-2 path as the Review tab) when it next launches or comes
+/// to the foreground.
+enum FlashcardGrades {
+    struct Grade: Codable, Hashable {
+        var id = UUID()
+        let word: String
+        let quality: Int
+        var at = Date()
+    }
+
+    static func pending() -> [Grade] {
+        guard let data = WidgetShared.defaults?.data(forKey: WidgetShared.Key.flashGrades),
+              let grades = try? JSONDecoder().decode([Grade].self, from: data)
+        else { return [] }
+        return grades
+    }
+
+    static func enqueue(word: String, quality: Int) {
+        save(pending() + [Grade(word: word, quality: quality)])
+    }
+
+    /// Drops applied grades, keeping any logged since they were read.
+    static func remove(_ ids: Set<UUID>) {
+        save(pending().filter { !ids.contains($0.id) })
+    }
+
+    private static func save(_ grades: [Grade]) {
+        WidgetShared.defaults?.set(try? JSONEncoder().encode(grades), forKey: WidgetShared.Key.flashGrades)
+    }
 }
 
 /// The "currently reading" Live Activity (iPhone only — iPadOS has no Live

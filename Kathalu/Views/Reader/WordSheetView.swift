@@ -13,6 +13,15 @@ struct WordSheetView: View {
     @State private var isLoadingMeaning = false
     @State private var added = false
 
+    private var entry: WordEntry? { DictionaryService.entry(for: word) }
+
+    /// Sheet height: the base layout plus room for the dictionary's base-word
+    /// and note lines when the entry has them.
+    static func height(for word: String) -> CGFloat {
+        let entry = DictionaryService.entry(for: word)
+        return 400 + (entry?.base != nil ? 26 : 0) + (entry?.note != nil ? 62 : 0)
+    }
+
     private var inDeck: Bool {
         added || model.data.cards[word] != nil
     }
@@ -66,12 +75,31 @@ struct WordSheetView: View {
                             .foregroundStyle(Theme.textTertiary)
                     }
                 } else {
-                    Text("Meaning unavailable offline")
+                    Text("No meaning found — check your connection")
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
             .frame(minHeight: 28)
+
+            if let entry, let base = entry.base {
+                (Text("from ") + Text(base).font(Theme.serif(14))
+                    + Text("  \(Transliterator.transliterate(base))").font(Theme.latinSerif(13.5)).italic()
+                    + Text(entry.baseMeaning.map { " · \($0)" } ?? ""))
+                    .font(.system(size: 13.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .padding(.top, 6)
+            }
+            if let note = entry?.note {
+                Text(note)
+                    .font(.system(size: 13.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 6)
+            }
 
             Text("from “\(story.titleEn)” · \(story.collection)")
                 .font(Theme.latinSerif(12.5))
@@ -101,6 +129,14 @@ struct WordSheetView: View {
         .padding(.horizontal, 26)
         .background(Theme.card)
         .task {
+            // The curated dictionary wins over anything cached on the card.
+            if let entry {
+                meaning = entry.meaning
+                if model.data.cards[word]?.meaning != entry.meaning {
+                    model.cacheMeaning(entry.meaning, for: word)
+                }
+                return
+            }
             if let cached = model.data.cards[word]?.meaning {
                 meaning = cached
                 return

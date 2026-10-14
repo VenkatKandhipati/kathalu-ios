@@ -165,6 +165,8 @@ final class AppModel {
             Task { await hydrate(userID: session.userID) }
         }
 
+        applyDictionaryMeanings()
+        applyWidgetGrades()
         refreshWidgets(force: true)
         readingActivity.endOrphans()
         Task { await backfillMeanings() }
@@ -172,7 +174,21 @@ final class AppModel {
 
     private func persist() {
         localStore.save(data)
-        refreshWidgets()
+        scheduleWidgetRefresh()
+    }
+
+    @ObservationIgnored private var widgetRefreshTask: Task<Void, Never>?
+
+    /// Coalesces widget snapshot writes: a burst of changes (e.g. rating cards
+    /// in quick succession) costs one refresh a moment after the last one,
+    /// instead of encoding the deck on every tap. Backgrounding flushes it.
+    private func scheduleWidgetRefresh() {
+        widgetRefreshTask?.cancel()
+        widgetRefreshTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled else { return }
+            self?.refreshWidgets()
+        }
     }
 
     // MARK: Reading
@@ -225,20 +241,65 @@ final class AppModel {
         deckCards.filter { $0.isDue }.count
     }
 
-    /// Marks today as read and updates the story's best proficiency.
+    /// Active reading time that makes a day count toward the streak.
+    static let dailyReadingGoal: TimeInterval = 3 * 60
+
+    /// Adds active reader time to today's total (local, resets each day) and
+    /// marks today as a reading day once it reaches `dailyReadingGoal` —
+    /// the streak is about time spent reading, not stories finished.
+    func addReadingTime(_ seconds: TimeInterval) {
+        guard seconds > 0 else { return }
+        let defaults = UserDefaults.standard
+        let today = DayStamp.today.description
+        var total = defaults.string(forKey: "readingTimeDay") == today
+            ? defaults.double(forKey: "readingTimeSeconds") : 0
+        total += seconds
+        defaults.set(today, forKey: "readingTimeDay")
+        defaults.set(total, forKey: "readingTimeSeconds")
+        if total >= Self.dailyReadingGoal { markReadingDay() }
+    }
+
+    private func markReadingDay() {
+        let today = DayStamp.today
+        guard !data.readingDates.contains(today) else { return }
+        data.readingDates.insert(today, at: 0)
+        if data.readingDates.count > 365 { data.readingDates.removeLast() }
+        persist()
+        if isSignedIn { sync.pushReadingDay() }
+    }
+
+    // MARK: Resume position
+
+    /// Where each story was left off, as a story-wide paragraph index — stable
+    /// across font sizes and reading modes. Local-only (UserDefaults): sign-in
+    /// rebuilds `UserData` from the server, which doesn't know this field.
+    private static let positionsKey = "readingPositions"
+
+    func readingPosition(storyIdx: Int) -> Int? {
+        let positions = UserDefaults.standard.dictionary(forKey: Self.positionsKey) as? [String: Int]
+        return positions?[String(storyIdx)]
+    }
+
+    /// Saves the paragraph a story is open at; `nil` (or the first paragraph)
+    /// clears it so the story opens from the top next time.
+    func saveReadingPosition(_ paragraph: Int?, storyIdx: Int) {
+        var positions = UserDefaults.standard.dictionary(forKey: Self.positionsKey) as? [String: Int] ?? [:]
+        let key = String(storyIdx)
+        if let paragraph, paragraph > 0 { positions[key] = paragraph } else { positions[key] = nil }
+        UserDefaults.standard.set(positions, forKey: Self.positionsKey)
+    }
+
+    /// Records a finished story: best proficiency and a reading session.
+    /// (Doesn't touch the streak — see `addReadingTime`.)
     func finishReading(storyIdx: Int, proficiencyPct: Int) {
         let today = DayStamp.today
-        if !data.readingDates.contains(today) {
-            data.readingDates.insert(today, at: 0)
-            if data.readingDates.count > 365 { data.readingDates.removeLast() }
-        }
         let previous = data.storyProgress[storyIdx]?.bestPct ?? 0
         let best = max(previous, proficiencyPct)
         data.storyProgress[storyIdx] = StoryProgressEntry(bestPct: best, lastRead: today)
         persist()
         if isSignedIn {
             sync.pushProgress(storyIdx: storyIdx, bestPct: best)
-            sync.pushReadingDay(storyIdx: storyIdx, pct: proficiencyPct)
+            sync.pushSession(storyIdx: storyIdx, pct: proficiencyPct)
         }
     }
 
@@ -279,17 +340,44 @@ final class AppModel {
         }
     }
 
-    /// Up to 60 deck cards for the flashcard widget, due ones first. Only cards
-    /// with a meaning — Reveal must always show a translation.
+    /// Deck cards for the flashcard widget, in the Review tab's session order
+    /// (due cards oldest-first, then up to 20 new), followed by upcoming cards
+    /// so the widget can surface them itself after midnight. Only cards with a
+    /// meaning — Reveal must always show a translation.
     private func flashcardSnapshot() -> [FlashcardSnapshot] {
-        deckCards
-            .filter { !($0.meaning ?? "").isEmpty }
-            .sorted { $0.isDue != $1.isDue ? $0.isDue : $0.addedAt > $1.addedAt }
-            .prefix(60)
-            .map { FlashcardSnapshot(
+        let cards = deckCards.filter { !($0.meaning ?? "").isEmpty }
+        let due = cards.filter { !$0.isNew && $0.isDue }.sorted { $0.nextReview < $1.nextReview }
+        let fresh = cards.filter(\.isNew).sorted { $0.addedAt < $1.addedAt }.prefix(20)
+        let upcoming = cards.filter { !$0.isDue }.sorted { $0.nextReview < $1.nextReview }
+        return (due + fresh + upcoming).prefix(120).map {
+            FlashcardSnapshot(
                 telugu: $0.telugu,
                 trans: $0.trans ?? Transliterator.transliterate($0.telugu),
-                meaning: $0.meaning) }
+                meaning: $0.meaning,
+                nextReview: $0.nextReview.description)
+        }
+    }
+
+    /// The last batch of words graded on the widget, so an open Review
+    /// session can drop them.
+    private(set) var widgetGradedWords: Set<String> = []
+
+    /// Applies Hard/Good taps from the flashcard widget through the same SM-2
+    /// path as the Review tab (`rate`), which also syncs and refreshes widgets.
+    /// A grade for a card that's no longer due was already handled (e.g.
+    /// graded in the app first) and is dropped.
+    func applyWidgetGrades() {
+        let pending = FlashcardGrades.pending()
+        guard !pending.isEmpty else { return }
+        var graded: Set<String> = []
+        for grade in pending.sorted(by: { $0.at < $1.at }) {
+            guard let card = data.cards[grade.word], card.isDue,
+                  (0...5).contains(grade.quality) else { continue }
+            rate(card: card, quality: grade.quality)
+            graded.insert(grade.word)
+        }
+        FlashcardGrades.remove(Set(pending.map(\.id)))
+        if !graded.isEmpty { widgetGradedWords = graded }
     }
 
     /// Fetches meanings for deck cards that don't have one yet, so the
@@ -306,12 +394,29 @@ final class AppModel {
             .sorted { $0.isDue != $1.isDue ? $0.isDue : $0.addedAt > $1.addedAt }
             .prefix(10)
         for card in missing {
-            // MyMemory sometimes echoes the input back — that's not a meaning.
-            if let meaning = await TranslationService.meaning(for: card.telugu),
-               !meaning.isEmpty, meaning != card.telugu {
+            if let meaning = await DictionaryService.meaning(for: card.telugu) {
                 cacheMeaning(meaning, for: card.telugu)
             }
         }
+    }
+
+    /// Replaces saved meanings with the curated dictionary's wherever they
+    /// differ — older cards carry unvalidated MyMemory glosses. Runs at launch
+    /// and after sign-in (the server copy still has the old meanings), and
+    /// pushes corrected cards so the server catches up.
+    private func applyDictionaryMeanings() {
+        var changed: [VocabCard] = []
+        for (word, card) in data.cards {
+            guard let meaning = DictionaryService.entry(for: word)?.meaning,
+                  card.meaning != meaning else { continue }
+            var updated = card
+            updated.meaning = meaning
+            data.cards[word] = updated
+            changed.append(updated)
+        }
+        guard !changed.isEmpty else { return }
+        persist()
+        if isSignedIn { changed.forEach(sync.pushCard) }
     }
 
     /// Routes a `kathalu://` deep link from a widget or the Live Activity and
@@ -578,5 +683,6 @@ final class AppModel {
     private func hydrate(userID: String) async {
         data = await sync.activate(userID: userID, local: data)
         persist()
+        applyDictionaryMeanings()
     }
 }

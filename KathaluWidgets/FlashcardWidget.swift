@@ -16,16 +16,28 @@ struct RevealFlashcardIntent: AppIntent {
     }
 }
 
-/// Moves to the next card, face down. Reveal-only practice: nothing is rated
-/// here, so the SM-2 schedule (and sync) stay owned by the app.
-struct NextFlashcardIntent: AppIntent {
-    static var title: LocalizedStringResource { "Next flashcard" }
+/// Hard / Good. Only logs the grade (`FlashcardGrades`) and moves on — the
+/// widget redraws instantly. The app applies the log through the Review tab's
+/// SM-2 path (and syncs) when it next launches or comes to the foreground;
+/// until then the widget hides logged cards.
+struct GradeFlashcardIntent: AppIntent {
+    static var title: LocalizedStringResource { "Grade flashcard" }
+    static var isDiscoverable: Bool { false }
+
+    @Parameter(title: "Word") var word: String
+    /// SM-2 quality: 3 = Hard, 4 = Good (same values as the Review tab).
+    @Parameter(title: "Quality") var quality: Int
+
+    init() {}
+
+    init(word: String, quality: Int) {
+        self.word = word
+        self.quality = quality
+    }
 
     func perform() async throws -> some IntentResult {
-        let defaults = WidgetShared.defaults
-        let position = defaults?.integer(forKey: WidgetShared.Key.flashPosition) ?? 0
-        defaults?.set(position + 1, forKey: WidgetShared.Key.flashPosition)
-        defaults?.set(false, forKey: WidgetShared.Key.flashRevealed)
+        FlashcardGrades.enqueue(word: word, quality: quality)
+        WidgetShared.defaults?.set(false, forKey: WidgetShared.Key.flashRevealed)
         return .result()
     }
 }
@@ -34,43 +46,47 @@ struct NextFlashcardIntent: AppIntent {
 
 struct FlashcardEntry: TimelineEntry {
     let date: Date
-    /// nil when no deck card has a meaning yet (the widget shows a hint).
+    /// The next card due today; nil when caught up or the deck is empty.
     let card: FlashcardSnapshot?
     let revealed: Bool
-    let position: Int
-    let deckSize: Int
+    /// Cards left today, including `card`.
+    let dueCount: Int
+    /// No deck card has a meaning yet (the widget shows a hint).
+    let deckEmpty: Bool
 }
 
 struct FlashcardProvider: TimelineProvider {
     func placeholder(in context: Context) -> FlashcardEntry {
         FlashcardEntry(date: .now,
                        card: FlashcardSnapshot(telugu: "కథ", trans: "katha", meaning: "story"),
-                       revealed: true, position: 1, deckSize: 12)
+                       revealed: true, dueCount: 5, deckEmpty: false)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FlashcardEntry) -> Void) {
         completion(context.isPreview ? placeholder(in: context) : current())
     }
 
-    /// State only changes via the buttons (which reload the widget) or the app
-    /// (which reloads this kind when the deck or its meanings change).
+    /// State changes via the buttons (which reload the widget) or the app
+    /// (which reloads this kind when the deck changes); the midnight refresh
+    /// brings in cards that come due tomorrow.
     func getTimeline(in context: Context, completion: @escaping (Timeline<FlashcardEntry>) -> Void) {
-        completion(Timeline(entries: [current()], policy: .never))
+        let midnight = Calendar.current.startOfDay(for: .now).addingTimeInterval(86_400)
+        completion(Timeline(entries: [current()], policy: .after(midnight)))
     }
 
-    /// The app only snapshots cards that have a meaning, so every card here
-    /// can be revealed with its translation.
+    /// Today's queue: the app's snapshot (Review-tab order) filtered to cards
+    /// due today, minus any graded here that the app hasn't applied yet.
     private func current() -> FlashcardEntry {
-        let defaults = WidgetShared.defaults
-        let position = max(0, defaults?.integer(forKey: WidgetShared.Key.flashPosition) ?? 0)
-        let revealed = defaults?.bool(forKey: WidgetShared.Key.flashRevealed) ?? false
         let deck = WidgetData.deck
         guard !deck.isEmpty else {
-            return FlashcardEntry(date: .now, card: nil, revealed: false, position: 0, deckSize: 0)
+            return FlashcardEntry(date: .now, card: nil, revealed: false, dueCount: 0, deckEmpty: true)
         }
-        let i = position % deck.count
-        return FlashcardEntry(date: .now, card: deck[i], revealed: revealed,
-                              position: i + 1, deckSize: deck.count)
+        let today = DayStamp.today.description
+        let graded = Set(FlashcardGrades.pending().map(\.word))
+        let queue = deck.filter { ($0.nextReview ?? today) <= today && !graded.contains($0.telugu) }
+        let revealed = WidgetShared.defaults?.bool(forKey: WidgetShared.Key.flashRevealed) ?? false
+        return FlashcardEntry(date: .now, card: queue.first, revealed: revealed && !queue.isEmpty,
+                              dueCount: queue.count, deckEmpty: false)
     }
 }
 
@@ -86,8 +102,10 @@ struct FlashcardWidgetView: View {
         Group {
             if let card = entry.card {
                 cardView(card)
-            } else {
+            } else if entry.deckEmpty {
                 emptyState
+            } else {
+                caughtUpState
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -97,12 +115,33 @@ struct FlashcardWidgetView: View {
             : WidgetShared.Link.review)
     }
 
+    /// Nothing due today — the Review tab would say the same.
+    private var caughtUpState: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            WidgetCaption(text: "Flashcards")
+            Spacer(minLength: 0)
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: medium ? 24 : 20))
+                .foregroundStyle(WidgetPalette.green)
+            Text("All caught up")
+                .font(.system(size: medium ? 15 : 13, weight: .semibold))
+                .foregroundStyle(.primary)
+            Text("No cards due — tap for today's story.")
+                .font(.system(size: medium ? 12.5 : 11))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private func cardView(_ card: FlashcardSnapshot) -> some View {
         VStack(spacing: 4) {
             HStack {
                 WidgetCaption(text: "Flashcards")
                 Spacer()
-                Text("\(entry.position)/\(entry.deckSize)")
+                Text("\(entry.dueCount) due")
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
             }
@@ -126,11 +165,19 @@ struct FlashcardWidgetView: View {
             }
             Spacer(minLength: 0)
             HStack(spacing: 8) {
-                Button(intent: RevealFlashcardIntent()) {
-                    pill(entry.revealed ? "Hide" : "Reveal", filled: false)
+                // Face down: Reveal · Good. Revealed: Hard · Good — the Review
+                // tab's quality 3 and 4.
+                if entry.revealed {
+                    Button(intent: GradeFlashcardIntent(word: card.telugu, quality: 3)) {
+                        pill("Hard", filled: false)
+                    }
+                } else {
+                    Button(intent: RevealFlashcardIntent()) {
+                        pill("Reveal", filled: false)
+                    }
                 }
-                Button(intent: NextFlashcardIntent()) {
-                    pill("Next", filled: true)
+                Button(intent: GradeFlashcardIntent(word: card.telugu, quality: 4)) {
+                    pill("Good", filled: true)
                 }
             }
             .buttonStyle(.plain)
@@ -172,7 +219,7 @@ struct FlashcardWidget: Widget {
             FlashcardWidgetView(entry: entry)
         }
         .configurationDisplayName("Flashcard")
-        .description("Flip through your review deck — Reveal shows the romanization and English meaning.")
+        .description("Today's review cards — Reveal, then grade Hard or Good. Grades count in the Review tab.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

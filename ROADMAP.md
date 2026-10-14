@@ -13,6 +13,8 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 ## Part 1 — Feature roadmap (prioritized)
 
 ### 1. Own glossary / dictionary — accurate, local-first, DB-backed
+> **Phases (a) + (b) shipped (Oct 2026).** _As-built:_ Claude drafted a glossary of every word form in the 8 stories (789 entries, `tools/glossary/drafts/story*.json`: card-sized `meaning`, base word + meaning, part of speech, note, confidence). The user reviews it on a private review page (`tools/glossary/review/`, published artifact with a `reviews` db collection; `build_review.py` regenerates its data with romanizations, context sentences and MyMemory's answer for comparison). `reviews.json` snapshots those decisions; `export_dictionary.py` merges drafts + fixes into the bundled `Resources/dictionary.json`. In the app, `DictionaryService` answers first (MyMemory only for misses, now validated by `TranslationService.isUsable`); `WordSheetView` shows the meaning plus base word and note; `AppModel.applyDictionaryMeanings()` rewrites saved deck meanings at launch and after sign-in and pushes them to the server. Fixing typos in `stories.json` was part of this (split words had produced junk glossary entries). **Adding a story:** run `tools/glossary/new_forms.py <idx>`, draft the missing forms, then rebuild/republish the review page and re-export. Still open: (c) the backend table / community loop, and a `senses` list (alternate senses currently live in `note`).
+
 **Priority: highest.** Meanings currently come only from the free MyMemory API — online-only, rate-limited, and frequently low-quality or an echo of the input. Every bad gloss also poisons the review deck. The goal is to **own our dictionary data** rather than depend on a translation endpoint.
 
 **What to build**
@@ -137,7 +139,9 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 
 **As-built notes (phases 1–4):** script data lives in code (`Models/Akshara.swift`) rather than `aksharas.json`; SM-2 state lives in a separate local `aksharacards.json` (`AksharaStore`) — deliberately *outside* `UserData`, because the sign-in merge rebuilds `UserData` from the server and would wipe unknown fields. Script progress is therefore local-only for now (cloud sync would need backend support). Guninthalu and vatthulu quiz state are namespaced in the same store (`gunintha:<vowel>` / `vatthu:<letter>` keys).
 
-### 3. Resume reading position (per-story bookmark)
+### 3. ✅ Resume reading position (per-story bookmark) — Done
+> _As-built:_ the position is a **story-wide paragraph index**, not a page number or scroll offset, so it survives font-size changes and switching paged ↔ scroll. Stored locally in UserDefaults (`AppModel.readingPosition` / `saveReadingPosition`, key `readingPositions`) rather than on `StoryProgressEntry`, because sign-in rebuilds `UserData` from the server. `ReaderView` saves on disappear/background and clears it when the end is reached; on reopen it jumps to the saved page (paged, via `ReaderPage.firstParagraph`) or paragraph (scroll, `.scrollPosition(id:)` + `ScrollViewReader`) and shows a "Resumed where you left off · Start over" pill for a few seconds.
+
 **Priority: high, low cost.** Reopening a story always restarts at the top — punishing for longer reads spread across sessions.
 
 **What to build**
@@ -199,7 +203,7 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 | **Today's Story** | small, medium | story of the day on the hero-card gradient; medium adds your best-score ring · that story |
 | **Letter of the Day** | small, medium | one akshara a day, walking the alphabet; medium adds sound hint + varga · Charts, letter drawer open |
 | **Sentence to Read** | medium, large | a full sentence every 6 h (124 usable from the corpus) in large type, no story caption; *Hide romanization* toggle, off by default · the sentence's story |
-| **Flashcard** | small, medium | **interactive** Reveal / Next buttons (iOS 17 AppIntents) over your deck, due cards first; Reveal always shows romanization **and English meaning** — only cards with a meaning are included, and the app backfills missing meanings (10 per launch/foreground) · Review tab |
+| **Flashcard** | small, medium | **graded review**: today's Review-tab queue (due, then new), "N due" header; face down **Reveal · Good**, revealed **Hard · Good** (SM-2 quality 3 / 4). Taps only log the grade in the App Group and redraw instantly (an earlier version woke the app per tap and lagged seconds); the app applies the log through SM-2 + sync on launch/foreground, and an open Review session drops those cards. "All caught up" when nothing is due (tap → today's story) · Review tab |
 | **Reading Live Activity** | Lock Screen + Dynamic Island (iPhone only) | open story, progress %, time read, words looked up; started by the reader, updated on background/finish, ended on close · that story |
 
 **As-built notes**
@@ -282,13 +286,13 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 - **~~`SpeechService` audio session is unconfigured.~~ ✅ Fixed.** Now sets the `.playback` category (`.spokenAudio` mode, `.duckOthers`) so pronunciation plays through the silent switch and ducks background audio, and falls back to the system default voice when `te-IN` isn't installed. _The follow-on (user-facing rate/voice settings) shipped as feature #5._
 
 ### Medium
-- **Reading completion auto-fires and inflates stats.** `finishIfNeeded()` runs when a story fits on screen or on reaching the last page / 99% scroll, regardless of real reading — marking a reading day (streak++), incrementing `storiesRead`, and recording proficiency. Short stories can grant a streak on open. Gate on real dwell time (the new reading-timer accumulator is a natural signal) and/or scroll depth.
+- **~~Reading completion auto-fires and inflates stats.~~ ✅ Fixed:** the streak no longer depends on finishing stories — a day counts once **3 minutes of active reading** accumulate (`AppModel.addReadingTime` / `dailyReadingGoal`; the reader reports time every 15 s and on pause; today's total is local in UserDefaults). Finishing a story (stories read, best score, session push) now needs the end reached *and* active time ≥ max(15 s, words ÷ 2), and the back button no longer finishes an unfinished story. `finishIfNeeded()` runs when a story fits on screen or on reaching the last page / 99% scroll, regardless of real reading — marking a reading day (streak++), incrementing `storiesRead`, and recording proficiency. Short stories can grant a streak on open. Gate on real dwell time (the new reading-timer accumulator is a natural signal) and/or scroll depth.
 
 - **`ReaderView.pages` re-tokenizes the whole story on every render.** It's a computed property calling `ReaderPage.paginate(...)`, referenced from `body`, `progressFraction`, and `onChange`. The scroll reader already caches `scrollParagraphs`; the paged reader should cache the same way (recompute only when `story`/`fontSize` changes).
 
-- **Changing font size mid-read misaligns revealed words.** Token IDs are `page-para-offset`; re-paginating at a new font size shifts them, so `revealedTokens` highlights the wrong words. Use IDs independent of pagination.
+- **~~Changing font size mid-read misaligns revealed words.~~ ✅ Fixed:** token ids are story-wide `paragraph-offset`, shared by both readers; the page index is clamped when re-pagination changes the page count. Token IDs are `page-para-offset`; re-paginating at a new font size shifts them, so `revealedTokens` highlights the wrong words. Use IDs independent of pagination.
 
-- **`TranslationService` returns unvalidated MyMemory output.** It lowercases and passes through whatever comes back — including provider warnings, quota messages, or an echo of the input — and `WordSheetView` always says "unavailable offline" even on an online failure. _(Subsumed by feature #1, but worth a quick guard sooner.)_
+- **~~`TranslationService` returns unvalidated MyMemory output.~~ ✅ Fixed** (feature #1: dictionary first, MyMemory answers validated). It lowercases and passes through whatever comes back — including provider warnings, quota messages, or an echo of the input — and `WordSheetView` always says "unavailable offline" even on an online failure. _(Subsumed by feature #1, but worth a quick guard sooner.)_
 
 - **No way to delete saved cards.** `data.cards` only grows; a bad add or bad auto-gloss is permanent. Tracked as feature #9, but it's a correctness/data-hygiene gap on its own.
 

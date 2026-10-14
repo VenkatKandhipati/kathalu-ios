@@ -1,0 +1,1952 @@
+{
+ "అంటూ": {
+  "claudeMeaning": "saying",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:19.799Z",
+  "word": "అంటూ"
+ },
+ "అంటే": {
+  "claudeMeaning": "(fond) of",
+  "meaning": "means",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T02:43:34.208Z",
+  "word": "అంటే"
+ },
+ "అంత": {
+  "claudeMeaning": "that much, so much",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:20.834Z",
+  "word": "అంత"
+ },
+ "అందంగా": {
+  "claudeMeaning": "beautifully",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:56.804Z",
+  "word": "అందంగా"
+ },
+ "అందకపోవడంతో": {
+  "claudeMeaning": "as it couldn't reach",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:47.553Z",
+  "word": "అందకపోవడంతో"
+ },
+ "అందరినీ": {
+  "claudeMeaning": "everyone (as object)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:46.270Z",
+  "word": "అందరినీ"
+ },
+ "అంది": {
+  "claudeMeaning": "said",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:41.768Z",
+  "word": "అంది"
+ },
+ "అక్కడి": {
+  "claudeMeaning": "of there",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:59.270Z",
+  "word": "అక్కడి"
+ },
+ "అక్కడికి": {
+  "claudeMeaning": "to there",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:55.184Z",
+  "word": "అక్కడికి"
+ },
+ "అక్కడున్న": {
+  "claudeMeaning": "that is (lying) there",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:28.031Z",
+  "word": "అక్కడున్న"
+ },
+ "అటూ": {
+  "claudeMeaning": "that way",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:24:22.853Z",
+  "word": "అటూ"
+ },
+ "అడవిలో": {
+  "claudeMeaning": "in the forest",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:20.551Z",
+  "word": "అడవిలో"
+ },
+ "అతనంటే": {
+  "claudeMeaning": "of him",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:42.567Z",
+  "word": "అతనంటే"
+ },
+ "అదంతా": {
+  "claudeMeaning": "all that",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:21.367Z",
+  "word": "అదంతా"
+ },
+ "అది": {
+  "claudeMeaning": "it, that",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:44.501Z",
+  "word": "అది"
+ },
+ "అదుగో": {
+  "claudeMeaning": "look, there it is",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:26.168Z",
+  "word": "అదుగో"
+ },
+ "అదేదో": {
+  "claudeMeaning": "whatever that was",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:25:40.367Z",
+  "word": "అదేదో"
+ },
+ "అనుకుంటూ": {
+  "claudeMeaning": "thinking",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:11.169Z",
+  "word": "అనుకుంటూ"
+ },
+ "అనుకుంది": {
+  "claudeMeaning": "thought (to itself)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:41.251Z",
+  "word": "అనుకుంది"
+ },
+ "అనుకోకుండా": {
+  "claudeMeaning": "unexpectedly, by chance",
+  "meaning": "unexpectedly",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:23:51.230Z",
+  "word": "అనుకోకుండా"
+ },
+ "అన్నిటికన్నా": {
+  "claudeMeaning": "most of all",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:24.636Z",
+  "word": "అన్నిటికన్నా"
+ },
+ "అపాయం": {
+  "claudeMeaning": "danger",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:03.879Z",
+  "word": "అపాయం"
+ },
+ "అప్పుడు": {
+  "claudeMeaning": "then",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:18.134Z",
+  "word": "అప్పుడు"
+ },
+ "అప్పుడే": {
+  "claudeMeaning": "just then",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:53.418Z",
+  "word": "అప్పుడే"
+ },
+ "అప్పుడైనా": {
+  "claudeMeaning": "at least then",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:38.072Z",
+  "word": "అప్పుడైనా"
+ },
+ "అమ్మేస్తాడో": {
+  "claudeMeaning": "whether he'll sell",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:56.016Z",
+  "word": "అమ్మేస్తాడో"
+ },
+ "అయినా": {
+  "claudeMeaning": "even so, still",
+  "meaning": "even so",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:11:23.202Z",
+  "word": "అయినా"
+ },
+ "అయిపోయింది": {
+  "claudeMeaning": "has become",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:20.583Z",
+  "word": "అయిపోయింది"
+ },
+ "అర్ధం": {
+  "claudeMeaning": "meaning",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:22.448Z",
+  "word": "అర్ధం"
+ },
+ "అలంకరించేవారు": {
+  "claudeMeaning": "used to decorate",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:57.791Z",
+  "word": "అలంకరించేవారు"
+ },
+ "అలా": {
+  "claudeMeaning": "like that",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:59.049Z",
+  "word": "అలా"
+ },
+ "అలాంటి": {
+  "claudeMeaning": "such, like that",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:52.616Z",
+  "word": "అలాంటి"
+ },
+ "అవును": {
+  "claudeMeaning": "yes",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:40.367Z",
+  "word": "అవును"
+ },
+ "ఆకలితో": {
+  "claudeMeaning": "hungry (with hunger)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:56.533Z",
+  "word": "ఆకలితో"
+ },
+ "ఆటంకాలు": {
+  "claudeMeaning": "obstacles",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:29.002Z",
+  "word": "ఆటంకాలు"
+ },
+ "ఆపద": {
+  "claudeMeaning": "trouble",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:10.909Z",
+  "word": "ఆపద"
+ },
+ "ఆపిందా": {
+  "claudeMeaning": "did it stop?",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:33.168Z",
+  "word": "ఆపిందా"
+ },
+ "ఆహారం": {
+  "claudeMeaning": "food",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:32.285Z",
+  "word": "ఆహారం"
+ },
+ "ఇంత": {
+  "claudeMeaning": "this much, so",
+  "meaning": "this far",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:01:26.260Z",
+  "word": "ఇంత"
+ },
+ "ఇక": {
+  "claudeMeaning": "then",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:29:34.365Z",
+  "word": "ఇక"
+ },
+ "ఇచ్చావు": {
+  "claudeMeaning": "(you) gave",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:18.502Z",
+  "word": "ఇచ్చావు"
+ },
+ "ఇటూ": {
+  "claudeMeaning": "this way",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:24:23.698Z",
+  "word": "ఇటూ"
+ },
+ "ఇప్పుడు": {
+  "claudeMeaning": "now",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:04:04.269Z",
+  "word": "ఇప్పుడు"
+ },
+ "ఇబ్బంది": {
+  "claudeMeaning": "trouble, difficulty",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:48.320Z",
+  "word": "ఇబ్బంది"
+ },
+ "ఇబ్బందులు": {
+  "claudeMeaning": "troubles",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:59.553Z",
+  "word": "ఇబ్బందులు"
+ },
+ "ఇలా": {
+  "claudeMeaning": "like this, this way",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:44.034Z",
+  "word": "ఇలా"
+ },
+ "ఇస్తుండేది": {
+  "claudeMeaning": "used to give",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:30.285Z",
+  "word": "ఇస్తుండేది"
+ },
+ "ఇస్తూ": {
+  "claudeMeaning": "giving",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:45.403Z",
+  "word": "ఇస్తూ"
+ },
+ "ఈ": {
+  "claudeMeaning": "this",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:24.220Z",
+  "word": "ఈ"
+ },
+ "ఉంటుంది": {
+  "claudeMeaning": "will be",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:01.195Z",
+  "word": "ఉంటుంది"
+ },
+ "ఉండకుండా": {
+  "claudeMeaning": "without staying",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:47.788Z",
+  "word": "ఉండకుండా"
+ },
+ "ఉండడం": {
+  "claudeMeaning": "being",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:07.855Z",
+  "word": "ఉండడం"
+ },
+ "ఉండాలంటే": {
+  "claudeMeaning": "for it to be",
+  "status": "ok",
+  "updatedAt": "2026-10-14T02:59:33.746Z",
+  "word": "ఉండాలంటే"
+ },
+ "ఉండాలి": {
+  "claudeMeaning": "must be, should have",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:08.700Z",
+  "word": "ఉండాలి"
+ },
+ "ఉండే": {
+  "claudeMeaning": "that live, living",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:22.402Z",
+  "word": "ఉండే"
+ },
+ "ఉంది": {
+  "claudeMeaning": "is",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:56.814Z",
+  "word": "ఉంది"
+ },
+ "ఉన్న": {
+  "claudeMeaning": "that is, who was",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:57.534Z",
+  "word": "ఉన్న"
+ },
+ "ఉన్నాయి": {
+  "claudeMeaning": "there are, there were",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:11.515Z",
+  "word": "ఉన్నాయి"
+ },
+ "ఊపుతున్నాయి": {
+  "claudeMeaning": "are nodding",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:50.631Z",
+  "word": "ఊపుతున్నాయి"
+ },
+ "ఊరి": {
+  "claudeMeaning": "of the village",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:37.445Z",
+  "word": "ఊరి"
+ },
+ "ఊరికే": {
+  "claudeMeaning": "for no reason",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:45.996Z",
+  "word": "ఊరికే"
+ },
+ "ఊరేగింపు": {
+  "claudeMeaning": "procession",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:41.029Z",
+  "word": "ఊరేగింపు"
+ },
+ "ఊరేగింపుకు": {
+  "claudeMeaning": "for the procession",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:59.201Z",
+  "word": "ఊరేగింపుకు"
+ },
+ "ఊళ్ళో": {
+  "claudeMeaning": "in the village",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:54.739Z",
+  "word": "ఊళ్ళో"
+ },
+ "ఎంచక్కా": {
+  "claudeMeaning": "nicely, with ease",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:38.531Z",
+  "word": "ఎంచక్కా"
+ },
+ "ఎంచుకునేవారు": {
+  "claudeMeaning": "used to choose",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:33.350Z",
+  "word": "ఎంచుకునేవారు"
+ },
+ "ఎందుకు": {
+  "claudeMeaning": "why",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:19.585Z",
+  "word": "ఎందుకు"
+ },
+ "ఎక్కడం": {
+  "claudeMeaning": "climbing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:28.396Z",
+  "word": "ఎక్కడం"
+ },
+ "ఎక్కబోతోంది": {
+  "claudeMeaning": "was about to climb",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:45.101Z",
+  "word": "ఎక్కబోతోంది"
+ },
+ "ఎక్కువ": {
+  "claudeMeaning": "a lot, too much, more",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:19.167Z",
+  "word": "ఎక్కువ"
+ },
+ "ఎదురు": {
+  "claudeMeaning": "in front",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:28:14.834Z",
+  "word": "ఎదురు"
+ },
+ "ఎద్దు": {
+  "claudeMeaning": "bull",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:00.987Z",
+  "word": "ఎద్దు"
+ },
+ "ఎద్దును": {
+  "claudeMeaning": "the bull",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:27.729Z",
+  "word": "ఎద్దును"
+ },
+ "ఎప్పుడు": {
+  "claudeMeaning": "when",
+  "meaning": "ever",
+  "status": "fixed",
+  "updatedAt": "2026-10-13T22:27:04.269Z",
+  "word": "ఎప్పుడు"
+ },
+ "ఎప్పుడూ": {
+  "claudeMeaning": "always",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:25.451Z",
+  "word": "ఎప్పుడూ"
+ },
+ "ఎలాంటి": {
+  "claudeMeaning": "any kind of",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:27.865Z",
+  "word": "ఎలాంటి"
+ },
+ "ఎలాగో": {
+  "claudeMeaning": "somehow",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:49:20.084Z",
+  "word": "ఎలాగో"
+ },
+ "ఎవరు": {
+  "claudeMeaning": "who",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:11.583Z",
+  "word": "ఎవరు"
+ },
+ "ఏ": {
+  "claudeMeaning": "any",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:03.081Z",
+  "word": "ఏ"
+ },
+ "ఏంటో": {
+  "claudeMeaning": "what",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:46.062Z",
+  "word": "ఏంటో"
+ },
+ "ఏకాగ్రత": {
+  "claudeMeaning": "focus, concentration",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:07.001Z",
+  "word": "ఏకాగ్రత"
+ },
+ "ఏదో": {
+  "claudeMeaning": "something",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:43.747Z",
+  "word": "ఏదో"
+ },
+ "ఏమిటో": {
+  "claudeMeaning": "who knows what",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:57.537Z",
+  "word": "ఏమిటో"
+ },
+ "ఒకసారి": {
+  "claudeMeaning": "once, one time",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:43.379Z",
+  "word": "ఒకసారి"
+ },
+ "ఓ": {
+  "claudeMeaning": "a, one",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:12.581Z",
+  "word": "ఓ"
+ },
+ "కంటికి": {
+  "claudeMeaning": "to the eye",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:38.771Z",
+  "word": "కంటికి"
+ },
+ "కట్టి": {
+  "claudeMeaning": "tying",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:16.579Z",
+  "word": "కట్టి"
+ },
+ "కట్టేవారు": {
+  "claudeMeaning": "used to tie up",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:02.676Z",
+  "word": "కట్టేవారు"
+ },
+ "కడిగి": {
+  "claudeMeaning": "washing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:04.416Z",
+  "word": "కడిగి"
+ },
+ "కదా": {
+  "claudeMeaning": "right?",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:50.678Z",
+  "word": "కదా"
+ },
+ "కనిపిస్తున్నావో": {
+  "claudeMeaning": "how you look",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:20.531Z",
+  "word": "కనిపిస్తున్నావో"
+ },
+ "కర్ర": {
+  "claudeMeaning": "stick",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:29.318Z",
+  "word": "కర్ర"
+ },
+ "కర్రతో": {
+  "claudeMeaning": "with a stick",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:33.072Z",
+  "word": "కర్రతో"
+ },
+ "కలుపు": {
+  "claudeMeaning": "weeds",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:35.467Z",
+  "word": "కలుపు"
+ },
+ "కష్టం": {
+  "claudeMeaning": "difficulty",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:21.702Z",
+  "word": "కష్టం"
+ },
+ "కష్టపడి": {
+  "claudeMeaning": "working hard",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:29.738Z",
+  "word": "కష్టపడి"
+ },
+ "కానీ": {
+  "claudeMeaning": "but",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:29.049Z",
+  "word": "కానీ"
+ },
+ "కాపాడి": {
+  "claudeMeaning": "protecting",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:37.329Z",
+  "word": "కాపాడి"
+ },
+ "కింద": {
+  "claudeMeaning": "under, below",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:51.933Z",
+  "word": "కింద"
+ },
+ "కిందకి": {
+  "claudeMeaning": "down",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:50.317Z",
+  "word": "కిందకి"
+ },
+ "కేకలు": {
+  "claudeMeaning": "screams, shouts",
+  "meaning": "screams",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:24:13.573Z",
+  "word": "కేకలు"
+ },
+ "కొట్టడానికి": {
+  "claudeMeaning": "to swim",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:47.639Z",
+  "word": "కొట్టడానికి"
+ },
+ "కొట్టమని": {
+  "claudeMeaning": "telling (you) to hit",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:34.471Z",
+  "word": "కొట్టమని"
+ },
+ "కొట్టింది": {
+  "claudeMeaning": "hit, struck",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:24.352Z",
+  "word": "కొట్టింది"
+ },
+ "కొడితే": {
+  "claudeMeaning": "if (you) hit",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:31.114Z",
+  "word": "కొడితే"
+ },
+ "కొడుతూ": {
+  "claudeMeaning": "swimming",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:44.017Z",
+  "word": "కొడుతూ"
+ },
+ "కొమ్మన": {
+  "claudeMeaning": "on the branch",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:08.219Z",
+  "word": "కొమ్మన"
+ },
+ "కొలనులో": {
+  "claudeMeaning": "into/in the pond",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:33.119Z",
+  "word": "కొలనులో"
+ },
+ "కోసం": {
+  "claudeMeaning": "for",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:49.920Z",
+  "word": "కోసం"
+ },
+ "కోసుకుని": {
+  "claudeMeaning": "plucking (for myself)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:39.017Z",
+  "word": "కోసుకుని"
+ },
+ "గంటలు": {
+  "claudeMeaning": "bells",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:29:19.590Z",
+  "word": "గంటలు"
+ },
+ "గమనిస్తున్న": {
+  "claudeMeaning": "who was watching",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:23.059Z",
+  "word": "గమనిస్తున్న"
+ },
+ "గురించి": {
+  "claudeMeaning": "about",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:34.684Z",
+  "word": "గురించి"
+ },
+ "గొర్రె": {
+  "claudeMeaning": "sheep",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:10.866Z",
+  "word": "గొర్రె"
+ },
+ "గొర్రెలన్నీ": {
+  "claudeMeaning": "all the sheep",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:05.113Z",
+  "word": "గొర్రెలన్నీ"
+ },
+ "గొర్రెలోడి": {
+  "claudeMeaning": "the shepherd's",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:02.518Z",
+  "word": "గొర్రెలోడి"
+ },
+ "గొర్రెలోడికి": {
+  "claudeMeaning": "to the shepherd",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:46.082Z",
+  "word": "గొర్రెలోడికి"
+ },
+ "గొర్రెలోడు": {
+  "claudeMeaning": "shepherd",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:54.115Z",
+  "word": "గొర్రెలోడు"
+ },
+ "గోల": {
+  "claudeMeaning": "noise, racket, fuss",
+  "meaning": "noise",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:49:14.527Z",
+  "word": "గోల"
+ },
+ "చిటారు": {
+  "claudeMeaning": "the very top (of a tree)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:06.481Z",
+  "word": "చిటారు"
+ },
+ "చిలుక": {
+  "claudeMeaning": "parrot",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:24.255Z",
+  "word": "చిలుక"
+ },
+ "చూడ": {
+  "claudeMeaning": "to look at",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:27:54.498Z",
+  "word": "చూడ"
+ },
+ "చూసి": {
+  "claudeMeaning": "seeing, having seen",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:53.336Z",
+  "word": "చూసి"
+ },
+ "చూసుకుంటాడు": {
+  "claudeMeaning": "looks after",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:07:04.769Z",
+  "word": "చూసుకుంటాడు"
+ },
+ "చెట్టు": {
+  "claudeMeaning": "tree",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:51.003Z",
+  "word": "చెట్టు"
+ },
+ "చెట్లు": {
+  "claudeMeaning": "trees",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:27.137Z",
+  "word": "చెట్లు"
+ },
+ "చెప్పాలా": {
+  "claudeMeaning": "need I say?",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:22.465Z",
+  "word": "చెప్పాలా"
+ },
+ "చెప్పింది": {
+  "claudeMeaning": "said, told",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:35.535Z",
+  "word": "చెప్పింది"
+ },
+ "చెప్పిన": {
+  "claudeMeaning": "that was said",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:34.494Z",
+  "word": "చెప్పిన"
+ },
+ "చెప్పినట్లు": {
+  "claudeMeaning": "as (it) said",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:41.148Z",
+  "word": "చెప్పినట్లు"
+ },
+ "చెప్పినా": {
+  "claudeMeaning": "even if (they) say",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:18.935Z",
+  "word": "చెప్పినా"
+ },
+ "చేతిదాకా": {
+  "claudeMeaning": "within reach",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:37.603Z",
+  "word": "చేతిదాకా"
+ },
+ "చేయగలం": {
+  "claudeMeaning": "(we) can do",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:37.669Z",
+  "word": "చేయగలం"
+ },
+ "చేయించి": {
+  "claudeMeaning": "bathing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:26.181Z",
+  "word": "చేయించి"
+ },
+ "చేశావు": {
+  "claudeMeaning": "(you) did",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:42.316Z",
+  "word": "చేశావు"
+ },
+ "చేసి": {
+  "claudeMeaning": "doing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:48.715Z",
+  "word": "చేసి"
+ },
+ "చేసుకుని": {
+  "claudeMeaning": "celebrating",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:46.931Z",
+  "word": "చేసుకుని"
+ },
+ "చేసుకోవాలి": {
+  "claudeMeaning": "should do",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:28.330Z",
+  "word": "చేసుకోవాలి"
+ },
+ "చేస్తాడో": {
+  "claudeMeaning": "what he'll do",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:47.946Z",
+  "word": "చేస్తాడో"
+ },
+ "చేస్తూనే": {
+  "claudeMeaning": "kept on doing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:56.094Z",
+  "word": "చేస్తూనే"
+ },
+ "జంతువుల": {
+  "claudeMeaning": "of animals",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:35.371Z",
+  "word": "జంతువుల"
+ },
+ "జంతువులకు": {
+  "claudeMeaning": "to the animals",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:24.300Z",
+  "word": "జంతువులకు"
+ },
+ "జంతువులు": {
+  "claudeMeaning": "animals",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:37.784Z",
+  "word": "జంతువులు"
+ },
+ "జవాబు": {
+  "claudeMeaning": "answer",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:52.063Z",
+  "word": "జవాబు"
+ },
+ "జాగ్రత్తగా": {
+  "claudeMeaning": "carefully",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:43.934Z",
+  "word": "జాగ్రత్తగా"
+ },
+ "తప్పుడు": {
+  "claudeMeaning": "wrong, false",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:26.767Z",
+  "word": "తప్పుడు"
+ },
+ "తల": {
+  "claudeMeaning": "head",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:49.669Z",
+  "word": "తల"
+ },
+ "తింటాడో": {
+  "claudeMeaning": "whether he'll eat",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:53.282Z",
+  "word": "తింటాడో"
+ },
+ "తినేయొచ్చు": {
+  "claudeMeaning": "(you) can eat (them) up",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:39.702Z",
+  "word": "తినేయొచ్చు"
+ },
+ "తినేస్తా": {
+  "claudeMeaning": "I'll eat (them) up",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:40.131Z",
+  "word": "తినేస్తా"
+ },
+ "తిరుగుతూ": {
+  "claudeMeaning": "wandering around",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:46.752Z",
+  "word": "తిరుగుతూ"
+ },
+ "తీసుకుందామని": {
+  "claudeMeaning": "intending to take (rest)",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:25:26.937Z",
+  "word": "తీసుకుందామని"
+ },
+ "తీసుకువెళ్లి": {
+  "claudeMeaning": "taking along",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:32.227Z",
+  "word": "తీసుకువెళ్లి"
+ },
+ "తీసుకెళ్లే": {
+  "claudeMeaning": "taking out",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:42.737Z",
+  "word": "తీసుకెళ్లే"
+ },
+ "తెగ": {
+  "claudeMeaning": "really",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:49.016Z",
+  "word": "తెగ"
+ },
+ "తెలియని": {
+  "claudeMeaning": "who didn't know, unaware",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:36.251Z",
+  "word": "తెలియని"
+ },
+ "తెలీదు": {
+  "claudeMeaning": "don't know",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:49.428Z",
+  "word": "తెలీదు"
+ },
+ "తెలీనట్టు": {
+  "claudeMeaning": "as if not knowing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:46.972Z",
+  "word": "తెలీనట్టు"
+ },
+ "తెలుసా": {
+  "claudeMeaning": "do you know?",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:21.734Z",
+  "word": "తెలుసా"
+ },
+ "తెలుస్తుంది": {
+  "claudeMeaning": "becomes known",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:12.755Z",
+  "word": "తెలుస్తుంది"
+ },
+ "తోరణాలతో": {
+  "claudeMeaning": "with festive garlands",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:54.733Z",
+  "word": "తోరణాలతో"
+ },
+ "తోలే": {
+  "claudeMeaning": "that pulls",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:20.883Z",
+  "word": "తోలే"
+ },
+ "దా": {
+  "claudeMeaning": "is it ...'s?",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:51:40.614Z",
+  "word": "దా"
+ },
+ "దాంతో": {
+  "claudeMeaning": "so, with that",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:26.152Z",
+  "word": "దాంతో"
+ },
+ "దాని": {
+  "claudeMeaning": "its, of it",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:33.212Z",
+  "word": "దాని"
+ },
+ "దానికి": {
+  "claudeMeaning": "to it",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:15.998Z",
+  "word": "దానికి"
+ },
+ "దాన్ని": {
+  "claudeMeaning": "it (as object)",
+  "meaning": "it",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:49:26.433Z",
+  "word": "దాన్ని"
+ },
+ "దిగాలుగా": {
+  "claudeMeaning": "dejectedly, gloomily",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:18.967Z",
+  "word": "దిగాలుగా"
+ },
+ "దుంకి": {
+  "claudeMeaning": "jumping",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:51.379Z",
+  "word": "దుంకి"
+ },
+ "దూరం": {
+  "claudeMeaning": "far",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:28.832Z",
+  "word": "దూరం"
+ },
+ "దృష్టి": {
+  "claudeMeaning": "attention",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:59.148Z",
+  "word": "దృష్టి"
+ },
+ "దేవుడిని": {
+  "claudeMeaning": "the god",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:40.066Z",
+  "word": "దేవుడిని"
+ },
+ "దొరికింది": {
+  "claudeMeaning": "was found",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:34.251Z",
+  "word": "దొరికింది"
+ },
+ "ధైర్యంగా": {
+  "claudeMeaning": "bravely",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:06.362Z",
+  "word": "ధైర్యంగా"
+ },
+ "నక్క": {
+  "claudeMeaning": "fox, jackal",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:13.998Z",
+  "word": "నక్క"
+ },
+ "నడుస్తాడు": {
+  "claudeMeaning": "walks",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:27.973Z",
+  "word": "నడుస్తాడు"
+ },
+ "నన్ను": {
+  "claudeMeaning": "me",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:51.779Z",
+  "word": "నన్ను"
+ },
+ "నన్నేమి": {
+  "claudeMeaning": "what to me",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:46.348Z",
+  "word": "నన్నేమి"
+ },
+ "నవ్వకూడదు": {
+  "claudeMeaning": "shouldn't laugh",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:19.666Z",
+  "word": "నవ్వకూడదు"
+ },
+ "నవ్వడం": {
+  "claudeMeaning": "laughing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:06.034Z",
+  "word": "నవ్వడం"
+ },
+ "నా": {
+  "claudeMeaning": "my",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:58.703Z",
+  "word": "నా"
+ },
+ "నాకు": {
+  "claudeMeaning": "to me",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:59.981Z",
+  "word": "నాకు"
+ },
+ "నానా": {
+  "claudeMeaning": "all kinds of",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:49:08.948Z",
+  "word": "నానా"
+ },
+ "నిజమే": {
+  "claudeMeaning": "is true indeed",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:41.932Z",
+  "word": "నిజమే"
+ },
+ "నీకు": {
+  "claudeMeaning": "to you, for you",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:29.834Z",
+  "word": "నీకు"
+ },
+ "నుంచి": {
+  "claudeMeaning": "from",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:04:00.537Z",
+  "word": "నుంచి"
+ },
+ "నుంచోపెట్టి": {
+  "claudeMeaning": "making (it) stand",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:28:03.498Z",
+  "word": "నుంచోపెట్టి"
+ },
+ "నువ్వు": {
+  "claudeMeaning": "you",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:11:33.823Z",
+  "word": "నువ్వు"
+ },
+ "నోటికి": {
+  "claudeMeaning": "to the mouth",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:40.142Z",
+  "word": "నోటికి"
+ },
+ "పండగ": {
+  "claudeMeaning": "festival",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:46.115Z",
+  "word": "పండగ"
+ },
+ "పండ్లు": {
+  "claudeMeaning": "fruits",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:10.568Z",
+  "word": "పండ్లు"
+ },
+ "పంది": {
+  "claudeMeaning": "pig",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:52.964Z",
+  "word": "పంది"
+ },
+ "పందికి": {
+  "claudeMeaning": "to the pig",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:24:08.718Z",
+  "word": "పందికి"
+ },
+ "పందితో": {
+  "claudeMeaning": "with the pig",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:11.864Z",
+  "word": "పందితో"
+ },
+ "పందిని": {
+  "claudeMeaning": "the pig (as object)",
+  "meaning": "the pig",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:23:58.985Z",
+  "word": "పందిని"
+ },
+ "పక్కనే": {
+  "claudeMeaning": "right beside",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:31.238Z",
+  "word": "పక్కనే"
+ },
+ "పట్టడానికి": {
+  "claudeMeaning": "to catch",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:24:01.014Z",
+  "word": "పట్టడానికి"
+ },
+ "పట్టు": {
+  "claudeMeaning": "silk",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:29:27.364Z",
+  "word": "పట్టు"
+ },
+ "పట్టుకుని": {
+  "claudeMeaning": "catching, holding",
+  "meaning": "catching",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:49:32.517Z",
+  "word": "పట్టుకుని"
+ },
+ "పడక": {
+  "claudeMeaning": "not agreeing (with it)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T02:43:19.782Z",
+  "word": "పడక"
+ },
+ "పడకుండా": {
+  "claudeMeaning": "without suffering",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:02.283Z",
+  "word": "పడకుండా"
+ },
+ "పడతాయి": {
+  "claudeMeaning": "(they) will fall",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:35.735Z",
+  "word": "పడతాయి"
+ },
+ "పడిపోయారు": {
+  "claudeMeaning": "got busy",
+  "meaning": "got busy (fell into)",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T04:30:04.745Z",
+  "word": "పడిపోయారు"
+ },
+ "పడ్డాయి": {
+  "claudeMeaning": "fell",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:34.237Z",
+  "word": "పడ్డాయి"
+ },
+ "పని": {
+  "claudeMeaning": "work, job",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:50.054Z",
+  "word": "పని"
+ },
+ "పనిని": {
+  "claudeMeaning": "the work (as object)",
+  "meaning": "the work",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:23:26.213Z",
+  "word": "పనిని"
+ },
+ "పరిగెత్తింది": {
+  "claudeMeaning": "ran",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:24:25.001Z",
+  "word": "పరిగెత్తింది"
+ },
+ "పసుపు": {
+  "claudeMeaning": "turmeric",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:10.282Z",
+  "word": "పసుపు"
+ },
+ "పాపం": {
+  "claudeMeaning": "poor thing!",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:50.896Z",
+  "word": "పాపం"
+ },
+ "పారిపోవాలని": {
+  "claudeMeaning": "wanting to run away",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:54.354Z",
+  "word": "పారిపోవాలని"
+ },
+ "పువ్వులతో": {
+  "claudeMeaning": "with flowers",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:55.849Z",
+  "word": "పువ్వులతో"
+ },
+ "పూజలు": {
+  "claudeMeaning": "prayers",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:47.766Z",
+  "word": "పూజలు"
+ },
+ "పూర్తి": {
+  "claudeMeaning": "complete, full",
+  "meaning": "complete",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:23:35.899Z",
+  "word": "పూర్తి"
+ },
+ "పూలు": {
+  "claudeMeaning": "flowers",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:14.716Z",
+  "word": "పూలు"
+ },
+ "పెట్టడం": {
+  "claudeMeaning": "making",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:31.948Z",
+  "word": "పెట్టడం"
+ },
+ "పెట్టడమే": {
+  "claudeMeaning": "putting (exactly)",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:26:16.104Z",
+  "word": "పెట్టడమే"
+ },
+ "పెట్టము": {
+  "claudeMeaning": "don't make",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:32.313Z",
+  "word": "పెట్టము"
+ },
+ "పెట్టారు": {
+  "claudeMeaning": "offered",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:29:31.511Z",
+  "word": "పెట్టారు"
+ },
+ "పెట్టి": {
+  "claudeMeaning": "putting",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:48.513Z",
+  "word": "పెట్టి"
+ },
+ "పెట్టింది": {
+  "claudeMeaning": "made (a racket)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:49:18.035Z",
+  "word": "పెట్టింది"
+ },
+ "పెట్టిన": {
+  "claudeMeaning": "that was given (fed)",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:25:37.503Z",
+  "word": "పెట్టిన"
+ },
+ "పెడతాను": {
+  "claudeMeaning": "I will do",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:10.817Z",
+  "word": "పెడతాను"
+ },
+ "పెడుతున్న": {
+  "claudeMeaning": "that was making",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:00.564Z",
+  "word": "పెడుతున్న"
+ },
+ "పెడుతున్నావు": {
+  "claudeMeaning": "you are making",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:18.078Z",
+  "word": "పెడుతున్నావు"
+ },
+ "పెడుతూ": {
+  "claudeMeaning": "making (screams)",
+  "meaning": "making",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:24:20.864Z",
+  "word": "పెడుతూ"
+ },
+ "పెడుతూనే": {
+  "claudeMeaning": "kept on making",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:43.652Z",
+  "word": "పెడుతూనే"
+ },
+ "పైన": {
+  "claudeMeaning": "after that",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:54.030Z",
+  "word": "పైన"
+ },
+ "పొంగిపోయాడనుకోండి": {
+  "claudeMeaning": "he swelled with pride",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:28:12.801Z",
+  "word": "పొంగిపోయాడనుకోండి"
+ },
+ "ప్రతి": {
+  "claudeMeaning": "every",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:38.396Z",
+  "word": "ప్రతి"
+ },
+ "బండి": {
+  "claudeMeaning": "cart",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:01.932Z",
+  "word": "బండి"
+ },
+ "బండిని": {
+  "claudeMeaning": "the cart",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:03.568Z",
+  "word": "బండిని"
+ },
+ "బలంగా": {
+  "claudeMeaning": "strong",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:26.498Z",
+  "word": "బలంగా"
+ },
+ "బాధపడింది": {
+  "claudeMeaning": "felt sad",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:49.918Z",
+  "word": "బాధపడింది"
+ },
+ "బొట్లు": {
+  "claudeMeaning": "kumkum dots",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:12.882Z",
+  "word": "బొట్లు"
+ },
+ "భయం": {
+  "claudeMeaning": "fear",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:43.866Z",
+  "word": "భయం"
+ },
+ "భయపడుతున్న": {
+  "claudeMeaning": "who are afraid",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:16.832Z",
+  "word": "భయపడుతున్న"
+ },
+ "భయమంటే": {
+  "claudeMeaning": "fear",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:44.727Z",
+  "word": "భయమంటే"
+ },
+ "భయమేసింది": {
+  "claudeMeaning": "got scared",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:24:09.668Z",
+  "word": "భయమేసింది"
+ },
+ "భలే": {
+  "claudeMeaning": "great!, wonderful",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:09.434Z",
+  "word": "భలే"
+ },
+ "మట్టుకు": {
+  "claudeMeaning": "as for",
+  "status": "ok",
+  "updatedAt": "2026-10-14T02:59:43.729Z",
+  "word": "మట్టుకు"
+ },
+ "మన": {
+  "claudeMeaning": "our",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:03.868Z",
+  "word": "మన"
+ },
+ "మనం": {
+  "claudeMeaning": "we (including you)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:58.414Z",
+  "word": "మనం"
+ },
+ "మనకు": {
+  "claudeMeaning": "to us",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:05.702Z",
+  "word": "మనకు"
+ },
+ "మమ్మల్ని": {
+  "claudeMeaning": "us",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:26.243Z",
+  "word": "మమ్మల్ని"
+ },
+ "మరి": {
+  "claudeMeaning": "well then",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:19.026Z",
+  "word": "మరి"
+ },
+ "మర్చిపోయి": {
+  "claudeMeaning": "forgetting",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:38.354Z",
+  "word": "మర్చిపోయి"
+ },
+ "మర్యాదగా": {
+  "claudeMeaning": "politely",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:33.213Z",
+  "word": "మర్యాదగా"
+ },
+ "మళ్లీ": {
+  "claudeMeaning": "again",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:02.111Z",
+  "word": "మళ్లీ"
+ },
+ "మహా": {
+  "claudeMeaning": "great",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:41.944Z",
+  "word": "మహా"
+ },
+ "మాట": {
+  "claudeMeaning": "word",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:35.296Z",
+  "word": "మాట"
+ },
+ "మాటలు": {
+  "claudeMeaning": "words",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:11:25.668Z",
+  "word": "మాటలు"
+ },
+ "మానాన్ని": {
+  "claudeMeaning": "its own way",
+  "meaning": "dignity",
+  "status": "fixed",
+  "updatedAt": "2026-10-13T22:26:35.983Z",
+  "word": "మానాన్ని"
+ },
+ "మామిడి": {
+  "claudeMeaning": "mango",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:49.766Z",
+  "word": "మామిడి"
+ },
+ "మిగతా": {
+  "claudeMeaning": "other",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:33.516Z",
+  "word": "మిగతా"
+ },
+ "మిత్రమా": {
+  "claudeMeaning": "O friend!",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:25.722Z",
+  "word": "మిత్రమా"
+ },
+ "మిమ్మల్ని": {
+  "claudeMeaning": "you",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:55.481Z",
+  "word": "మిమ్మల్ని"
+ },
+ "మీకు": {
+  "claudeMeaning": "to you",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:21.854Z",
+  "word": "మీకు"
+ },
+ "మెలికలు": {
+  "claudeMeaning": "twists",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:48.915Z",
+  "word": "మెలికలు"
+ },
+ "మెల్లగా": {
+  "claudeMeaning": "slowly",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:43.067Z",
+  "word": "మెల్లగా"
+ },
+ "మేతకు": {
+  "claudeMeaning": "to graze",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:30.666Z",
+  "word": "మేతకు"
+ },
+ "మేము": {
+  "claudeMeaning": "we",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:29.941Z",
+  "word": "మేము"
+ },
+ "మొత్తానికి": {
+  "claudeMeaning": "finally",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:06.628Z",
+  "word": "మొత్తానికి"
+ },
+ "మొదలెట్టాడు": {
+  "claudeMeaning": "started, began",
+  "meaning": "started",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:24:05.403Z",
+  "word": "మొదలెట్టాడు"
+ },
+ "మొదలెట్టాయి": {
+  "claudeMeaning": "started",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:06.782Z",
+  "word": "మొదలెట్టాయి"
+ },
+ "మొన్నటి": {
+  "claudeMeaning": "of the other day",
+  "status": "ok",
+  "updatedAt": "2026-10-14T02:43:22.979Z",
+  "word": "మొన్నటి"
+ },
+ "మొహాలు": {
+  "claudeMeaning": "faces",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:47.714Z",
+  "word": "మొహాలు"
+ },
+ "మోసపోయావు": {
+  "claudeMeaning": "(you) got fooled",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:31.681Z",
+  "word": "మోసపోయావు"
+ },
+ "మోసపోయేవి": {
+  "claudeMeaning": "used to get fooled",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:39.284Z",
+  "word": "మోసపోయేవి"
+ },
+ "యెంత": {
+  "claudeMeaning": "how much",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:19.001Z",
+  "word": "యెంత"
+ },
+ "రాసి": {
+  "claudeMeaning": "smearing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:14:11.228Z",
+  "word": "రాసి"
+ },
+ "రెండు": {
+  "claudeMeaning": "two",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:29.597Z",
+  "word": "రెండు"
+ },
+ "రెండే": {
+  "claudeMeaning": "only two",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:09.684Z",
+  "word": "రెండే"
+ },
+ "రెప్పలా": {
+  "claudeMeaning": "like an eyelid",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:40.019Z",
+  "word": "రెప్పలా"
+ },
+ "లేకుండా": {
+  "claudeMeaning": "without",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:23:30.285Z",
+  "word": "లేకుండా"
+ },
+ "లేదు": {
+  "claudeMeaning": "no",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:34.232Z",
+  "word": "లేదు"
+ },
+ "లేనప్పుడు": {
+  "claudeMeaning": "when there is no",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:05.567Z",
+  "word": "లేనప్పుడు"
+ },
+ "వచ్చన్న": {
+  "claudeMeaning": "that (you) know how",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:26:05.403Z",
+  "word": "వచ్చన్న"
+ },
+ "వచ్చిన": {
+  "claudeMeaning": "that came",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:38.887Z",
+  "word": "వచ్చిన"
+ },
+ "వచ్చినందుకు": {
+  "claudeMeaning": "for having come",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:31.113Z",
+  "word": "వచ్చినందుకు"
+ },
+ "వచ్చినప్పుడు": {
+  "claudeMeaning": "when it comes",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:11.686Z",
+  "word": "వచ్చినప్పుడు"
+ },
+ "వదలకుండా": {
+  "claudeMeaning": "without letting go",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:40.715Z",
+  "word": "వదలకుండా"
+ },
+ "వల్ల": {
+  "claudeMeaning": "because of",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:57.036Z",
+  "word": "వల్ల"
+ },
+ "వాటిల్లో": {
+  "claudeMeaning": "among them",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:09.905Z",
+  "word": "వాటిల్లో"
+ },
+ "వారంతా": {
+  "claudeMeaning": "all of them",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:45.461Z",
+  "word": "వారంతా"
+ },
+ "వారి": {
+  "claudeMeaning": "their, of those people",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:54.770Z",
+  "word": "వారి"
+ },
+ "వాలింది": {
+  "claudeMeaning": "landed",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:55.864Z",
+  "word": "వాలింది"
+ },
+ "వాలుతోంది": {
+  "claudeMeaning": "lands",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:57.489Z",
+  "word": "వాలుతోంది"
+ },
+ "వాళ్లని": {
+  "claudeMeaning": "them",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:17.866Z",
+  "word": "వాళ్లని"
+ },
+ "వాళ్ళ": {
+  "claudeMeaning": "their",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:20.766Z",
+  "word": "వాళ్ళ"
+ },
+ "వింటాము": {
+  "claudeMeaning": "listen",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:36.016Z",
+  "word": "వింటాము"
+ },
+ "విద్య": {
+  "claudeMeaning": "skill, learning",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:32.369Z",
+  "word": "విద్య"
+ },
+ "విని": {
+  "claudeMeaning": "listening, having heard",
+  "meaning": "having heard",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:11:32.434Z",
+  "word": "విని"
+ },
+ "విశ్రాంతి": {
+  "claudeMeaning": "rest",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:48.067Z",
+  "word": "విశ్రాంతి"
+ },
+ "వీధులు": {
+  "claudeMeaning": "streets",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:51.864Z",
+  "word": "వీధులు"
+ },
+ "వుంటారు": {
+  "claudeMeaning": "keep doing",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:30:13.999Z",
+  "word": "వుంటారు"
+ },
+ "వుంది": {
+  "claudeMeaning": "is",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:44.650Z",
+  "word": "వుంది"
+ },
+ "వెంటనే": {
+  "claudeMeaning": "immediately",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:55.018Z",
+  "word": "వెంటనే"
+ },
+ "వెతుక్కుంటూ": {
+  "claudeMeaning": "searching (for it)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:15.268Z",
+  "word": "వెతుక్కుంటూ"
+ },
+ "వెతుక్కోవాలి": {
+  "claudeMeaning": "(I) have to search",
+  "meaning": "have to search",
+  "status": "fixed",
+  "updatedAt": "2026-10-14T03:08:08.861Z",
+  "word": "వెతుక్కోవాలి"
+ },
+ "వెనకున్న": {
+  "claudeMeaning": "that were behind",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:06:03.929Z",
+  "word": "వెనకున్న"
+ },
+ "వెన్నతో": {
+  "claudeMeaning": "with butter",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:08:31.035Z",
+  "word": "వెన్నతో"
+ },
+ "వెలేసి": {
+  "claudeMeaning": "agape (mouth open)",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:28:31.565Z",
+  "word": "వెలేసి"
+ },
+ "వెళ్లిపోయింది": {
+  "claudeMeaning": "went away, left",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:04:02.169Z",
+  "word": "వెళ్లిపోయింది"
+ },
+ "వెళ్ళసాగాడు": {
+  "claudeMeaning": "set off",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:36.386Z",
+  "word": "వెళ్ళసాగాడు"
+ },
+ "వేసుకుని": {
+  "claudeMeaning": "putting on",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:05:30.320Z",
+  "word": "వేసుకుని"
+ },
+ "వొండుకు": {
+  "claudeMeaning": "cooking (for himself)",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:27:14.202Z",
+  "word": "వొండుకు"
+ },
+ "శుభ్రం": {
+  "claudeMeaning": "clean",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:52.835Z",
+  "word": "శుభ్రం"
+ },
+ "శ్రమపడతావు": {
+  "claudeMeaning": "(you) take the trouble",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:02:23.866Z",
+  "word": "శ్రమపడతావు"
+ },
+ "సంగతి": {
+  "claudeMeaning": "matter, fact",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:22:37.166Z",
+  "word": "సంగతి"
+ },
+ "సంవత్సరం": {
+  "claudeMeaning": "year",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:39.147Z",
+  "word": "సంవత్సరం"
+ },
+ "సన్నాహంతో": {
+  "claudeMeaning": "with preparations",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:28:23.584Z",
+  "word": "సన్నాహంతో"
+ },
+ "సలహా": {
+  "claudeMeaning": "advice",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:03:17.248Z",
+  "word": "సలహా"
+ },
+ "సలహాలు": {
+  "claudeMeaning": "advice, suggestions",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:28.881Z",
+  "word": "సలహాలు"
+ },
+ "సాంప్రదాయం": {
+  "claudeMeaning": "tradition",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:43.743Z",
+  "word": "సాంప్రదాయం"
+ },
+ "సాహసవంతుల్లా": {
+  "claudeMeaning": "like brave people",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:13:36.580Z",
+  "word": "సాహసవంతుల్లా"
+ },
+ "సిల్లీగా": {
+  "claudeMeaning": "silly",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:41.331Z",
+  "word": "సిల్లీగా"
+ },
+ "సుందరవనంలో": {
+  "claudeMeaning": "in Sundaravanam",
+  "status": "ok",
+  "updatedAt": "2026-10-14T02:59:52.818Z",
+  "word": "సుందరవనంలో"
+ },
+ "సులువు": {
+  "claudeMeaning": "easy",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:10:08.696Z",
+  "word": "సులువు"
+ },
+ "సేపటికి": {
+  "claudeMeaning": "after a while",
+  "status": "ok",
+  "updatedAt": "2026-10-13T22:28:27.167Z",
+  "word": "సేపటికి"
+ },
+ "స్నానం": {
+  "claudeMeaning": "bath",
+  "status": "ok",
+  "updatedAt": "2026-10-14T04:09:24.013Z",
+  "word": "స్నానం"
+ },
+ "స్వార్థం": {
+  "claudeMeaning": "selfishness",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:00:17.868Z",
+  "word": "స్వార్థం"
+ },
+ "హమ్మయ్యా": {
+  "claudeMeaning": "phew! (relief)",
+  "status": "ok",
+  "updatedAt": "2026-10-14T03:01:13.968Z",
+  "word": "హమ్మయ్యా"
+ }
+}
