@@ -69,10 +69,26 @@ struct MainTabView: View {
         .onOpenURL { url in
             if let tab = model.handleDeepLink(url) { selectedTab = tab }
         }
+        // A tapped daily reminder opens that day's story (same deep link).
+        .onAppear {
+            NotificationService.shared.onOpen = { url in
+                if let tab = model.handleDeepLink(url) { selectedTab = tab }
+            }
+        }
+        .alert("Want a daily reminder?", isPresented: Binding(
+            get: { model.showReminderOffer },
+            set: { model.showReminderOffer = $0 })
+        ) {
+            Button("Remind me") { Task { await model.enableReminders() } }
+            Button("Not now", role: .cancel) {}
+        } message: {
+            Text("Each evening at \(AppModel.timeLabel(model.reminderMinute)), a word from that day's story. Skipped on days you've already read. You can change this in Profile.")
+        }
         // Fill in missing flashcard meanings each time the app comes back.
         .onChange(of: scenePhase) {
             if scenePhase == .active {
                 model.applyWidgetGrades()
+                model.rescheduleReminders()
                 Task { await model.backfillMeanings() }
             } else if scenePhase == .background {
                 // Leave the widgets current before the app is suspended.

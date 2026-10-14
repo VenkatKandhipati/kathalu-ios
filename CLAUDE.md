@@ -120,6 +120,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 - `ReaderView.pages` re-paginates on every render (cheap at current story sizes).
 - Reader token ids are story-wide `paragraph-offset` — keep them independent of
   pagination. Story completion needs the end reached *and* `minimumReadSeconds`.
+- Daily reminders (`NotificationService`) schedule 14 individual days, not a repeating
+  trigger — call `AppModel.rescheduleReminders()` after anything that changes the streak
+  or today's read state. Settings live in UserDefaults (`reminderEnabled`/`reminderMinute`).
 - Resume positions are story-wide paragraph indexes in UserDefaults (`readingPositions`),
   local-only like script-deck state.
 - The streak counts a day after `AppModel.dailyReadingGoal` (3 min) of active reading,

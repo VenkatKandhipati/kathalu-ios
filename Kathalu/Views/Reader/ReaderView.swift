@@ -88,6 +88,7 @@ struct ReaderView: View {
         .onDisappear {
             savePosition()
             pauseTimer()
+            model.offerReminderIfPending()
             model.readingActivity.end()
         }
         .task {

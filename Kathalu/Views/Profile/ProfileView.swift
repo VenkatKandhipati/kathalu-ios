@@ -6,6 +6,73 @@ struct ProfileView: View {
     @State private var showAuth = false
     @State private var showDeleteConfirm = false
     @State private var deleteError: String?
+    /// Reminders are on here but iOS notifications are off for Kathalu.
+    @State private var notificationsBlocked = false
+
+    // MARK: Daily reminder
+
+    private var reminderSection: some View {
+        Section {
+            Toggle(isOn: Binding(
+                get: { model.reminderEnabled },
+                set: { on in
+                    if on {
+                        Task { notificationsBlocked = !(await model.enableReminders()) }
+                    } else {
+                        model.reminderEnabled = false
+                        notificationsBlocked = false
+                    }
+                })
+            ) {
+                settingLabel("Daily reminder", systemImage: "bell")
+            }
+            .tint(Theme.accent)
+
+            if model.reminderEnabled {
+                DatePicker(selection: Binding(
+                    get: {
+                        Calendar.current.date(bySettingHour: model.reminderMinute / 60,
+                                              minute: model.reminderMinute % 60,
+                                              second: 0, of: .now) ?? .now
+                    },
+                    set: { date in
+                        let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+                        model.reminderMinute = (parts.hour ?? 19) * 60 + (parts.minute ?? 0)
+                    }),
+                    displayedComponents: .hourAndMinute
+                ) {
+                    settingLabel("Time", systemImage: "clock")
+                }
+                #if DEBUG
+                Button("Send a test reminder in 10 s (next style)") { model.sendTestReminder() }
+                    .foregroundStyle(Theme.accent)
+                #endif
+            }
+        } header: {
+            Text("Reminder")
+        } footer: {
+            if notificationsBlocked {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Notifications are turned off for Kathalu.")
+                    Button("Open Settings") {
+                        if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+                }
+            } else {
+                Text("A word from that day's story, or its name — skipped on days you've already read 3 minutes.")
+            }
+        }
+        .task(id: model.reminderEnabled) {
+            // Reminders on but notifications since disabled in iOS Settings.
+            notificationsBlocked = model.reminderEnabled
+                ? !(await NotificationService.shared.isAuthorized)
+                : false
+        }
+    }
 
     var body: some View {
         @Bindable var model = model
@@ -49,6 +116,9 @@ struct ProfileView: View {
                     }
                 }
                 .listRowBackground(Theme.card)
+
+                reminderSection
+                    .listRowBackground(Theme.card)
 
                 if model.isSignedIn {
                     Section {

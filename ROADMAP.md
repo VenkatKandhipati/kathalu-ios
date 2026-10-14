@@ -155,7 +155,9 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 
 **Effort: S–M.** **Files:** `Models/VocabCard.swift` (`StoryProgressEntry`), `ReaderView`, `AppModel`.
 
-### 4. Daily reminders & reading goal (local notifications)
+### 4. ✅ Daily reminders (local notifications) — Done
+> _As-built:_ the goal is the streak's own rule (3 minutes of reading), so no separate goal setting. **Profile → Reminder**: on/off + time (default 7:00 PM), with an "Open Settings" link if iOS notifications are off. Opt-in is primed once, when the reader closes after the first day the 3-minute goal is met ("Want a daily reminder?"). `NotificationService` schedules the next 14 days as individual notifications (not one repeating one) so each can carry its own content: `ReminderContent` alternates daily between **one short word** from that day's story with its dictionary meaning and **just the story's name + reading time** (a sentence-to-read style was tried and dropped as too long) — no streak pressure; only the next reminder can turn into a milestone ("Day 30 📖", 7/14/30/50/100…) since later streaks aren't known yet; today's is dropped once today is read. Rescheduled at launch, on foreground, when the goal is met, and on setting changes (serialized so reschedules can't interleave). Tapping opens that day's story (`kathalu://story/<idx>`, cold launch included). DEBUG builds add "Send a test reminder in 10 s" in Profile.
+
 **Priority: high — retention.** Streaks are the core loop but nothing brings the user back. A daily local notification is high-leverage and works fully offline.
 
 **What to build**

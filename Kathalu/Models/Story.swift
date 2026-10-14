@@ -58,4 +58,42 @@ enum TeluguText {
     static func words(in text: String) -> [String] {
         tokens(in: text).filter(\.isTelugu).map(\.text)
     }
+
+    /// Splits a paragraph at . ! ? — but never inside quotes (dialogue stays
+    /// whole), and ".." is a mid-sentence pause in these stories, not an end.
+    static func sentences(in paragraph: String) -> [String] {
+        let chars = Array(paragraph)
+        var result: [String] = []
+        var current = ""
+        var quoteDepth = 0
+        var i = 0
+        while i < chars.count {
+            let ch = chars[i]
+            current.append(ch)
+            switch ch {
+            case "‘", "“": quoteDepth += 1
+            case "’", "”": quoteDepth = max(0, quoteDepth - 1)
+            case "'", "\"": quoteDepth = quoteDepth > 0 ? quoteDepth - 1 : 1
+            default: break
+            }
+            if ".!?".contains(ch) {
+                var run = 1
+                while i + 1 < chars.count, ".!?".contains(chars[i + 1]) {
+                    i += 1
+                    run += 1
+                    current.append(chars[i])
+                }
+                let isEllipsis = run >= 2 && chars[i] == "."
+                let atBreak = i + 1 >= chars.count || chars[i + 1].isWhitespace
+                if quoteDepth == 0, !isEllipsis, atBreak {
+                    result.append(current.trimmingCharacters(in: .whitespacesAndNewlines))
+                    current = ""
+                }
+            }
+            i += 1
+        }
+        let tail = current.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !tail.isEmpty { result.append(tail) }
+        return result
+    }
 }

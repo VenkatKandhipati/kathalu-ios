@@ -119,6 +119,33 @@ final class AppModel {
         didSet { UserDefaults.standard.set(hasSeenSoundTip, forKey: "hasSeenSoundTip") }
     }
 
+    // MARK: Daily reminder
+
+    /// Daily reading reminder (local notification). Off until the user opts in
+    /// — from Profile, or the one-time offer after their first 3-minute day.
+    var reminderEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(reminderEnabled, forKey: "reminderEnabled")
+            rescheduleReminders()
+        }
+    }
+    /// Reminder time as minutes after midnight (default 7:00 PM).
+    var reminderMinute: Int {
+        didSet {
+            UserDefaults.standard.set(reminderMinute, forKey: "reminderMinute")
+            rescheduleReminders()
+        }
+    }
+    /// The one-time "want a daily reminder?" offer has been shown (or the
+    /// user turned reminders on themselves), so it never shows again.
+    var hasOfferedReminder: Bool {
+        didSet { UserDefaults.standard.set(hasOfferedReminder, forKey: "hasOfferedReminder") }
+    }
+    /// Drives the offer alert (RootView). Raised when the reader closes after
+    /// the first day's reading goal is met — not mid-story.
+    var showReminderOffer = false
+    @ObservationIgnored private var reminderOfferPending = false
+
     /// False when no Telugu TTS voice is installed on the device. Without one,
     /// iOS falls back to a non-Telugu voice that can't pronounce the script, so
     /// pronunciation is silent — the UI prompts the user to add one in iOS
@@ -153,6 +180,9 @@ final class AppModel {
         showReadingTimer = UserDefaults.standard.object(forKey: "showReadingTimer") as? Bool ?? true
         hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
         hasSeenSoundTip = UserDefaults.standard.bool(forKey: "hasSeenSoundTip")
+        reminderEnabled = UserDefaults.standard.bool(forKey: "reminderEnabled")
+        reminderMinute = UserDefaults.standard.object(forKey: "reminderMinute") as? Int ?? 19 * 60
+        hasOfferedReminder = UserDefaults.standard.bool(forKey: "hasOfferedReminder")
         let apiClient = APIClient(auth: auth)
         api = apiClient
         sync = SyncEngine(api: apiClient)
@@ -169,6 +199,7 @@ final class AppModel {
         applyWidgetGrades()
         refreshWidgets(force: true)
         readingActivity.endOrphans()
+        rescheduleReminders()  // also installs the notification tap delegate
         Task { await backfillMeanings() }
     }
 
@@ -266,6 +297,66 @@ final class AppModel {
         if data.readingDates.count > 365 { data.readingDates.removeLast() }
         persist()
         if isSignedIn { sync.pushReadingDay() }
+        rescheduleReminders()  // today's reminder is no longer needed
+        if !hasOfferedReminder && !reminderEnabled { reminderOfferPending = true }
+    }
+
+    // MARK: Daily reminder
+
+    /// Rebuilds the scheduled reminders from current state (streak, whether
+    /// today is read, the time setting). Cheap; called at launch, on
+    /// foreground, when today's goal is met, and on setting changes.
+    func rescheduleReminders() {
+        let service = NotificationService.shared
+        guard reminderEnabled else { return service.reschedule(nil) }
+        service.reschedule(reminderPlan)
+    }
+
+    private var reminderPlan: NotificationService.Plan {
+        let stories = storyStore
+        return .init(
+            minuteOfDay: reminderMinute,
+            streak: data.streak,
+            readToday: data.readingDates.contains(.today),
+            storyForDate: { date in
+                let i = stories.index(for: date)
+                return stories.stories.indices.contains(i) ? stories.stories[i] : nil
+            })
+    }
+
+    #if DEBUG
+    func sendTestReminder() {
+        Task { await NotificationService.shared.sendTest(reminderPlan) }
+    }
+    #endif
+
+    /// "7:00 PM" for a minute-of-day, in the user's locale.
+    static func timeLabel(_ minuteOfDay: Int) -> String {
+        let date = Calendar.current.date(
+            bySettingHour: minuteOfDay / 60, minute: minuteOfDay % 60, second: 0, of: .now) ?? .now
+        return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    /// Turns reminders on, asking for notification permission first. Returns
+    /// false (and leaves them off) if the user declines.
+    @discardableResult
+    func enableReminders() async -> Bool {
+        hasOfferedReminder = true
+        let granted = await NotificationService.shared.requestAuthorization()
+        reminderEnabled = granted
+        return granted
+    }
+
+    /// Called when the reader closes: shows the one-time reminder offer if
+    /// today's goal was just met for the first time.
+    func offerReminderIfPending() {
+        guard reminderOfferPending, !hasOfferedReminder else { return }
+        reminderOfferPending = false
+        hasOfferedReminder = true
+        Task {
+            try? await Task.sleep(for: .milliseconds(600))  // let the reader finish dismissing
+            showReminderOffer = true
+        }
     }
 
     // MARK: Resume position
