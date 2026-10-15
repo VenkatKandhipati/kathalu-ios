@@ -130,5 +130,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   or today's read state. Settings live in UserDefaults (`reminderEnabled`/`reminderMinute`).
 - Resume positions are story-wide paragraph indexes in UserDefaults (`readingPositions`),
   local-only like script-deck state.
+- The story-vocab deck holds only words added via "Add to flashcards" (a tap just counts
+  in `wordTaps`). Reviews are capped at `AppModel.dailyReviewCap` (20/day) — use
+  `todaysReviewQueue`/`dueCount`, not raw `isDue`, for anything user-facing. Delete cards
+  with `removeCards` (syncs + survives sign-in via `pendingCardDeletes`).
 - The streak counts a day after `AppModel.dailyReadingGoal` (3 min) of active reading,
   not on story completion.

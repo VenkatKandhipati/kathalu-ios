@@ -195,6 +195,7 @@ final class AppModel {
             Task { await hydrate(userID: session.userID) }
         }
 
+        resetDeckOnce()
         applyDictionaryMeanings()
         applyWidgetGrades()
         // Story level: restore, then raise if progress earned more. didSet
@@ -237,21 +238,12 @@ final class AppModel {
         storyStore.stories.indices.contains(index) ? storyStore.stories[index] : nil
     }
 
-    /// Records a word lookup, creating/refreshing its vocab card entry lazily.
-    /// Returns the card (with transliteration filled in).
-    @discardableResult
-    func recordLookup(word: String, storyIdx: Int) -> VocabCard {
+    /// Counts a word lookup (drives "Most looked-up"). Looking a word up no
+    /// longer adds it to the deck — only "Add to flashcards" does — so the
+    /// Review tab holds just the words the reader chose to study.
+    func recordLookup(word: String, storyIdx: Int) {
         data.wordTaps[word, default: 0] += 1
-        var card = data.cards[word] ?? VocabCard(
-            telugu: word,
-            trans: Transliterator.transliterate(word),
-            storyIdx: storyIdx,
-            lookups: 0)
-        card.lookups += 1
-        if card.trans == nil { card.trans = Transliterator.transliterate(word) }
-        data.cards[word] = card
         persist()
-        return card
     }
 
     func cacheMeaning(_ meaning: String, for word: String) {
@@ -269,6 +261,7 @@ final class AppModel {
             storyIdx: storyIdx)
         card.storyIdx = card.storyIdx ?? storyIdx
         data.cards[word] = card
+        pendingCardDeletes.remove(word)  // re-added before its delete synced
         persist()
         if isSignedIn { sync.pushCard(card) }
     }
@@ -277,9 +270,94 @@ final class AppModel {
         Array(data.cards.values)
     }
 
-    var dueCount: Int {
-        deckCards.filter { $0.isDue }.count
+    // MARK: Removing cards
+
+    /// Words deleted here whose server copy isn't confirmed gone yet. Kept so
+    /// a sign-in (which rebuilds the deck from the server) can't bring them
+    /// back, and retried until the server agrees.
+    @ObservationIgnored private var pendingCardDeletes: Set<String> =
+        Set(UserDefaults.standard.stringArray(forKey: "pendingCardDeletes") ?? []) {
+        didSet { UserDefaults.standard.set(Array(pendingCardDeletes), forKey: "pendingCardDeletes") }
     }
+
+    func removeCards(_ words: Set<String>) {
+        guard !words.isEmpty else { return }
+        for word in words { data.cards[word] = nil }
+        persist()
+        pendingCardDeletes.formUnion(words)
+        flushCardDeletes()
+    }
+
+    private func flushCardDeletes() {
+        guard isSignedIn, !pendingCardDeletes.isEmpty else { return }
+        let words = pendingCardDeletes
+        Task {
+            let gone = await sync.deleteCards(words)
+            pendingCardDeletes.subtract(gone)
+        }
+    }
+
+    /// One-time cleanup (Oct 2026): every tapped word used to join the deck,
+    /// which flooded Review with words never chosen. Clears cards added before
+    /// the change — here and on the server. The cutoff date (not "everything")
+    /// keeps a second device from deleting words added after the reset.
+    private func resetDeckOnce() {
+        let key = "deckResetV1"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        guard let cutoff = Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 15)) else { return }
+        removeCards(Set(data.cards.values.filter { $0.addedAt < cutoff }.map(\.telugu)))
+    }
+
+    // MARK: Daily review cap
+
+    /// Story-word reviews per day. Due cards come first (oldest first), then
+    /// new ones; the rest wait for tomorrow.
+    static let dailyReviewCap = 20
+
+    private struct ReviewLog: Codable {
+        var day: String
+        var words: Set<String>
+    }
+
+    /// Words rated today (a card rated twice, e.g. after "Again", counts once).
+    private var reviewLog: ReviewLog = {
+        guard let data = UserDefaults.standard.data(forKey: "reviewLog"),
+              let log = try? JSONDecoder().decode(ReviewLog.self, from: data)
+        else { return ReviewLog(day: "", words: []) }
+        return log
+    }() {
+        didSet { UserDefaults.standard.set(try? JSONEncoder().encode(reviewLog), forKey: "reviewLog") }
+    }
+
+    var reviewedTodayCount: Int {
+        reviewLog.day == DayStamp.today.description ? reviewLog.words.count : 0
+    }
+
+    private func noteReviewed(_ word: String) {
+        let today = DayStamp.today.description
+        if reviewLog.day != today { reviewLog = ReviewLog(day: today, words: []) }
+        reviewLog.words.insert(word)
+    }
+
+    /// Everything that could be reviewed today, in session order: due cards
+    /// oldest-first, then new cards in the order they were added.
+    private var allDueCards: [VocabCard] {
+        let due = deckCards.filter { !$0.isNew && $0.isDue }.sorted { $0.nextReview < $1.nextReview }
+        let fresh = deckCards.filter { $0.isNew && $0.isDue }.sorted { $0.addedAt < $1.addedAt }
+        return due + fresh
+    }
+
+    /// Today's review queue — `allDueCards` up to what's left of the cap.
+    /// The Review tab, its badge and the Flashcard widget all use this.
+    var todaysReviewQueue: [VocabCard] {
+        Array(allDueCards.prefix(max(0, Self.dailyReviewCap - reviewedTodayCount)))
+    }
+
+    var dueCount: Int { todaysReviewQueue.count }
+
+    /// Due cards held back by the cap (shown as "N more tomorrow").
+    var dueBeyondCap: Int { allDueCards.count - todaysReviewQueue.count }
 
     /// Active reading time that makes a day count toward the streak.
     static let dailyReadingGoal: TimeInterval = 3 * 60
@@ -508,16 +586,16 @@ final class AppModel {
         }
     }
 
-    /// Deck cards for the flashcard widget, in the Review tab's session order
-    /// (due cards oldest-first, then up to 20 new), followed by upcoming cards
-    /// so the widget can surface them itself after midnight. Only cards with a
+    /// Deck cards for the flashcard widget: today's capped review queue (the
+    /// Review tab's order), followed by upcoming cards so the widget can
+    /// surface them itself after midnight (it caps those at the daily limit). Only cards with a
     /// meaning — Reveal must always show a translation.
     private func flashcardSnapshot() -> [FlashcardSnapshot] {
-        let cards = deckCards.filter { !($0.meaning ?? "").isEmpty }
-        let due = cards.filter { !$0.isNew && $0.isDue }.sorted { $0.nextReview < $1.nextReview }
-        let fresh = cards.filter(\.isNew).sorted { $0.addedAt < $1.addedAt }.prefix(20)
-        let upcoming = cards.filter { !$0.isDue }.sorted { $0.nextReview < $1.nextReview }
-        return (due + fresh + upcoming).prefix(120).map {
+        let today = todaysReviewQueue.filter { !($0.meaning ?? "").isEmpty }
+        let upcoming = deckCards
+            .filter { !$0.isDue && !($0.meaning ?? "").isEmpty }
+            .sorted { $0.nextReview < $1.nextReview }
+        return (today + upcoming).prefix(120).map {
             FlashcardSnapshot(
                 telugu: $0.telugu,
                 trans: $0.trans ?? Transliterator.transliterate($0.telugu),
@@ -622,6 +700,7 @@ final class AppModel {
         updated.repetitions = result.repetitions
         updated.nextReview = result.nextReview
         data.cards[card.telugu] = updated
+        noteReviewed(card.telugu)
         persist()
         if isSignedIn { sync.pushCard(updated) }
     }
@@ -850,7 +929,11 @@ final class AppModel {
 
     private func hydrate(userID: String) async {
         data = await sync.activate(userID: userID, local: data)
+        // Cards deleted here but not yet on the server came back with the
+        // server copy — drop them again and retry the delete.
+        for word in pendingCardDeletes { data.cards[word] = nil }
         persist()
+        flushCardDeletes()
         applyDictionaryMeanings()
         updateLevel()  // synced progress may graduate a level
     }

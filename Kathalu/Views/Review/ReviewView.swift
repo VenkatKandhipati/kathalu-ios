@@ -39,6 +39,13 @@ struct ReviewView: View {
             .navigationTitle("Review")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        WordsView()
+                    } label: {
+                        Label("Saved words", systemImage: "list.bullet")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     SoundToggleButton()
                 }
@@ -136,20 +143,12 @@ struct ReviewView: View {
         return due > 0 ? "\(name) · \(due)" : name
     }
 
-    /// Due cards first (oldest due first), then up to 20 new cards — same
-    /// session rule as the web reviewer.
+    /// Today's queue: due cards (oldest first), then new ones, up to the
+    /// daily cap (`AppModel.todaysReviewQueue`).
     private func buildSessionIfNeeded() {
         guard !sessionBuilt else { return }
         sessionBuilt = true
-        let cards = model.deckCards
-        let due = cards
-            .filter { !$0.isNew && $0.isDue }
-            .sorted { $0.nextReview < $1.nextReview }
-        let fresh = cards
-            .filter(\.isNew)
-            .sorted { $0.addedAt < $1.addedAt }
-            .prefix(20)
-        queue = due + fresh
+        queue = model.todaysReviewQueue
         done = 0
     }
 
@@ -171,6 +170,16 @@ struct ReviewView: View {
         }
     }
 
+    private var doneMessage: String {
+        let reviewed = model.reviewedTodayCount
+        if model.dueBeyondCap > 0 && reviewed >= AppModel.dailyReviewCap {
+            return "Daily limit reached · \(reviewed) reviewed today. \(model.dueBeyondCap) more tomorrow."
+        }
+        return reviewed > 0
+            ? "\(reviewed) card\(reviewed == 1 ? "" : "s") reviewed today · \(model.deckCards.count) in deck"
+            : "Nothing due today · \(model.deckCards.count) cards total"
+    }
+
     private var doneState: some View {
         VStack(spacing: 10) {
             Image(systemName: "checkmark.seal")
@@ -180,9 +189,7 @@ struct ReviewView: View {
             Text("All caught up")
                 .font(Theme.serif(24, weight: .bold))
                 .foregroundStyle(Theme.textHeading)
-            Text(done > 0
-                 ? "\(done) card\(done == 1 ? "" : "s") reviewed · \(model.deckCards.count) in deck"
-                 : "Nothing due today · \(model.deckCards.count) cards total")
+            Text(doneMessage)
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.textSecondary)
         }

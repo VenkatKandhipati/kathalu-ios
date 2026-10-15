@@ -87,6 +87,18 @@ final class SyncEngine {
         }
     }
 
+    /// Deletes cards by word (the server keys them by id). Returns the words
+    /// confirmed gone — including ones the server never had — so the caller
+    /// can retry the rest later.
+    func deleteCards(_ words: Set<String>) async -> Set<String> {
+        guard !words.isEmpty, let remote = try? await api.listCards() else { return [] }
+        var gone = words.subtracting(remote.map(\.telugu))
+        for card in remote where words.contains(card.telugu) {
+            if (try? await api.deleteCard(id: card.id)) != nil { gone.insert(card.telugu) }
+        }
+        return gone
+    }
+
     func pushProgress(storyIdx: Int, bestPct: Int) {
         Task { [api] in
             await self.push { _ = try await api.saveProgress(StoryProgressIn(storyIdx: storyIdx, bestPct: bestPct)) }

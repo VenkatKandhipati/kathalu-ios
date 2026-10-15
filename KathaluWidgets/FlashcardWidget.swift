@@ -83,7 +83,10 @@ struct FlashcardProvider: TimelineProvider {
         }
         let today = DayStamp.today.description
         let graded = Set(FlashcardGrades.pending().map(\.word))
-        let queue = deck.filter { ($0.nextReview ?? today) <= today && !graded.contains($0.telugu) }
+        // Capped like the Review tab (20/day); the app's snapshot already is,
+        // this covers cards that came due after midnight.
+        let queue = Array(deck.filter { ($0.nextReview ?? today) <= today && !graded.contains($0.telugu) }
+            .prefix(20))
         let revealed = WidgetShared.defaults?.bool(forKey: WidgetShared.Key.flashRevealed) ?? false
         return FlashcardEntry(date: .now, card: queue.first, revealed: revealed && !queue.isEmpty,
                               dueCount: queue.count, deckEmpty: false)

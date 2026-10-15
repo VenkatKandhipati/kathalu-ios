@@ -236,7 +236,9 @@ Last reviewed 4 Oct 2026 — **IA restructure** to fight feature sprawl: tabs ar
 
 ### The rest (lower priority)
 
-### 9. Vocabulary browser & deck management
+### 9. ✅ Vocabulary browser & deck management — Done
+> _As-built:_ **Saved words** screen (`Views/Deck/WordsView.swift`, from the Review toolbar and Profile): words grouped by story with romanization, meaning, due label and a speaker button; search; swipe to delete; Select → Delete N. `AppModel.removeCards` deletes locally and on the server (`DELETE /cards/{id}`, matched by word via `SyncEngine.deleteCards`); unconfirmed deletes persist in `pendingCardDeletes` and are retried — and re-removed after a sign-in rebuild — so cards can't come back. **Root cause fixed:** tapping a word no longer adds it to the deck (`recordLookup` only counts the tap); only "Add to flashcards" does. A one-time `resetDeckOnce` cleared every card added before 2026-10-15 (the user's call — the deck had grown to 90+ due from incidental taps). **Daily cap:** 20 story-word reviews per day (`AppModel.dailyReviewCap`, `todaysReviewQueue` = due oldest-first then new, minus words rated today) — drives the Review session, its badge, and the Flashcard widget; the done state says "Daily limit reached · N more tomorrow". Edit-meaning was left out.
+
 **Why:** You can *add* cards (`addToDeck`) but there's no screen to see, search, edit, or **delete** them — the deck only appears during a review session, and it grows unbounded. Also the natural home for the "correct this meaning" action feeding #1's community loop.
 **What:** A searchable "Words" screen over `deckCards`, grouped by story/due state, with swipe-to-delete, edit-meaning, and re-listen. Add `removeCard` to `AppModel` + a sync delete.
 **Effort: M.** **Files:** new `Views/Deck/`, `AppModel`, `APIClient`/`SyncEngine` (delete endpoint).
@@ -296,7 +298,7 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 
 - **~~`TranslationService` returns unvalidated MyMemory output.~~ ✅ Fixed** (feature #1: dictionary first, MyMemory answers validated). It lowercases and passes through whatever comes back — including provider warnings, quota messages, or an echo of the input — and `WordSheetView` always says "unavailable offline" even on an online failure. _(Subsumed by feature #1, but worth a quick guard sooner.)_
 
-- **No way to delete saved cards.** `data.cards` only grows; a bad add or bad auto-gloss is permanent. Tracked as feature #9, but it's a correctness/data-hygiene gap on its own.
+- **~~No way to delete saved cards.~~ ✅ Fixed (#9).** `data.cards` only grows; a bad add or bad auto-gloss is permanent. Tracked as feature #9, but it's a correctness/data-hygiene gap on its own.
 
 ### Low / cleanup
 - **Duplicate lookup counters.** `data.wordTaps[word]` and `VocabCard.lookups` both count look-ups; `mostLookedUp` uses `wordTaps` and `card.lookups` is essentially unused. Pick one.

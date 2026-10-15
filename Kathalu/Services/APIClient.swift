@@ -61,6 +61,10 @@ final class APIClient {
         try await request("POST", "cards/\(id.uuidString.lowercased())/rate", body: ["quality": quality])
     }
 
+    func deleteCard(id: UUID) async throws {
+        try await requestVoid("DELETE", "cards/\(id.uuidString.lowercased())", body: Optional<Int>.none)
+    }
+
     func syncCardStates(_ batch: CardStateSyncBatch) async throws {
         try await requestVoid("POST", "cards/state-sync", body: batch)
     }

@@ -93,6 +93,11 @@ struct ProfileView: View {
                     } label: {
                         settingLabel("Progress", systemImage: "chart.bar")
                     }
+                    NavigationLink {
+                        WordsView()
+                    } label: {
+                        settingLabel("Saved words", systemImage: "list.bullet")
+                    }
                 }
                 .listRowBackground(Theme.card)
 
