@@ -247,10 +247,10 @@ _Note: the deletion gap is also listed under bugs — it's a data-hygiene issue 
 **What:** Extend `SpeechService` with sentence/paragraph playback + `AVSpeechSynthesizerDelegate.willSpeakRangeOfSpeechString` to highlight the active word; play/pause in the reader chrome.
 **Effort: M–L.** **Files:** `SpeechService`, `ReaderView`. Shares the sentence-tokenization work from #6 and the audio-session fix (already done — see bug #2 in Part 2).
 
-### 11. Library search, filtering & difficulty levels
-**Why:** The bookshelf is a flat horizontal scroll; it won't scale and gives no way to pick stories by level.
-**What:** Search by title/collection; group/filter by collection; add a `difficulty`/`level` field to `Story` + `stories.json`, with a filter and a level chip on spines.
-**Effort: M.** **Files:** `Story`, `stories.json`, `LibraryView`.
+### 11. Story levels, library filters & graduation — ✅ Phase A + C done (content pending)
+> _As-built:_ four **levels by length** (`StoryLevel` in Story.swift, shared with widgets): 1 First steps ≤40 words · 2 Little stories 41–80 · 3 Stories 81–150 · 4 Longer stories 150+. Computed once in `StoryStore` from word count; `"level": N` in stories.json overrides. Library: graduation card → **Continue reading** (in-progress stories from resume positions, % read) → Today's story (meta shows level) → level chips + Unread over **a single sideways bookshelf**, shortest first; chips add/remove books (your level's chip has an accent dot). A first pass with one shelf per level, a search box and minutes on spines felt cramped and was dropped. **Nothing is locked.** `AppModel.currentLevel` = the level after the highest graduated one (graduate = 3 stories, or all if fewer, with best score ≥80%); it only rises (adding easy stories never demotes), first run places silently, later rises show "You've graduated from Level N — ready for Level N+1". Today's story (app, widgets, reminders) is drawn from the current level via the App Group `currentLevel` key read inside `StoryStore.index(for:)`.
+>
+> **Content is the open part (Phase B):** every current story is Level 3–4 (103–201 words). The user is sourcing short children's stories (fallback: Claude writes graded readers). Each new story → typo check → `tools/glossary/new_forms.py <idx>` drafts → review page → `export_dictionary.py`. Later: "new words for you" count, tags, Journey link (Level 1 stories using only learned letters).
 
 ### 12. iPad support & readable layout
 **Priority: medium — actively being tested on iPad.** The app is already universal (`TARGETED_DEVICE_FAMILY = "1,2"`) and runs on iPad, but every screen was laid out at phone width with **no size-class awareness**, so content stretches edge-to-edge: long Telugu reading lines, 4 giant chart tiles, oversized card stacks, a full-width segmented picker. No orientation lock, so landscape / Split View / Slide Over are all live too.

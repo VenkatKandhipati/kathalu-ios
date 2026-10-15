@@ -120,6 +120,11 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 - `ReaderView.pages` re-paginates on every render (cheap at current story sizes).
 - Reader token ids are story-wide `paragraph-offset` — keep them independent of
   pagination. Story completion needs the end reached *and* `minimumReadSeconds`.
+- Stories have a **level** (`StoryLevel`, 1–4 by word count; `"level"` in stories.json
+  overrides). `AppModel.currentLevel` only rises; it's mirrored to the App Group and
+  `StoryStore.index(for:)` picks today's story from that level — so the app, widgets and
+  reminders agree. **Adding a story** also means drafting its new word forms for the
+  glossary (`tools/glossary/new_forms.py <idx>`) and re-exporting the dictionary.
 - Daily reminders (`NotificationService`) schedule 14 individual days, not a repeating
   trigger — call `AppModel.rescheduleReminders()` after anything that changes the streak
   or today's read state. Settings live in UserDefaults (`reminderEnabled`/`reminderMinute`).

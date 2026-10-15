@@ -33,6 +33,9 @@ enum WidgetShared {
         static let flashRevealed = "flashRevealed"
         /// JSON `[FlashcardGrades.Grade]` — Hard/Good taps the app hasn't applied yet.
         static let flashGrades = "flashGrades"
+        /// `Int` the reader's current story level (StoryLevel raw value);
+        /// today's story is picked from that level.
+        static let currentLevel = "currentLevel"
         /// `Int` taps on the Lock Screen word (widget-owned); each one picks another word.
         static let lockWordTaps = "lockWordTaps"
     }

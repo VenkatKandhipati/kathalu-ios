@@ -351,7 +351,7 @@ body.focus main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px))
 
     // Story picker with per-story progress.
     const sel = $("#story");
-    const storyOpts = [`<option value="all">All 8 stories · ${done} of ${all} checked</option>`].concat(
+    const storyOpts = [`<option value="all">All ${state.data.stories.length} stories · ${done} of ${all} checked</option>`].concat(
       state.data.stories.map((s) => {
         const words = entries.filter((e) => e.stories.includes(s.index));
         const checked = words.filter((e) => state.reviews.has(e.id)).length;

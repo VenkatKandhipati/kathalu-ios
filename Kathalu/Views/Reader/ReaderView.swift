@@ -302,8 +302,7 @@ struct ReaderView: View {
 
     /// Continuous, infinite-scroll reader (the default).
     private var scrollReader: some View {
-        GeometryReader { outer in
-            ScrollViewReader { proxy in
+        ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
                     titleBlock.id(-1)  // scroll position -1 = at the top
@@ -316,19 +315,18 @@ struct ReaderView: View {
                 .padding(.top, 26)
                 .padding(.bottom, 40)
                 .readableColumn()
-                .background(
-                    GeometryReader { content in
-                        Color.clear.preference(
-                            key: ScrollMetricsKey.self,
-                            value: ScrollMetrics(
-                                offset: content.frame(in: .named(Self.scrollSpace)).minY,
-                                contentHeight: content.size.height))
-                    })
             }
             .scrollPosition(id: $scrollParagraph, anchor: .top)
-            .coordinateSpace(name: Self.scrollSpace)
-            .onPreferenceChange(ScrollMetricsKey.self) { metrics in
-                updateScrollProgress(metrics, viewportHeight: outer.size.height)
+            // The scroll view's own geometry (offset, content size, visible
+            // height, insets) — exact, unlike measuring the content by hand.
+            .onScrollGeometryChange(for: ScrollMetrics.self) { geo in
+                ScrollMetrics(
+                    offset: geo.contentOffset.y + geo.contentInsets.top,
+                    scrollable: geo.contentSize.height + geo.contentInsets.top
+                        + geo.contentInsets.bottom - geo.containerSize.height,
+                    contentHeight: geo.contentSize.height)
+            } action: { _, metrics in
+                updateScrollProgress(metrics)
             }
             .task {
                 if scrollParagraphs.isEmpty {
@@ -339,25 +337,22 @@ struct ReaderView: View {
                 try? await Task.sleep(for: .milliseconds(80))
                 proxy.scrollTo(resumedAt, anchor: .top)
             }
-            }
         }
     }
 
-    private static let scrollSpace = "readerScroll"
-
     /// Derives reading progress from scroll offset; finishes the story once the
     /// bottom is reached (or immediately if the whole story fits on screen).
-    private func updateScrollProgress(_ metrics: ScrollMetrics, viewportHeight: CGFloat) {
+    private func updateScrollProgress(_ metrics: ScrollMetrics) {
         guard metrics.contentHeight > 0 else { return }
-        let scrollable = metrics.contentHeight - viewportHeight
-        if scrollable <= 1 {
+        if metrics.scrollable <= 1 {
             scrollProgress = 1
             reachEnd()
             return
         }
-        let progress = min(1, max(0, -metrics.offset / scrollable))
+        let progress = min(1, max(0, metrics.offset / metrics.scrollable))
         scrollProgress = progress
-        if progress >= 0.99 { reachEnd() }
+        // Within a few points of the bottom counts (bounce/rounding).
+        if metrics.scrollable - metrics.offset <= 8 { reachEnd() }
     }
 
     private var pagedReader: some View {
@@ -580,17 +575,13 @@ struct WordSheetItem: Identifiable {
     var id: String { word }
 }
 
-/// Scroll offset + total content height, used to compute reading progress.
+/// The scroll reader's geometry, used to compute reading progress.
 private struct ScrollMetrics: Equatable {
+    /// How far the content is scrolled from its top.
     var offset: CGFloat
+    /// The furthest it can scroll (≤ 0 when the whole story fits).
+    var scrollable: CGFloat
     var contentHeight: CGFloat
-}
-
-private struct ScrollMetricsKey: PreferenceKey {
-    static let defaultValue = ScrollMetrics(offset: 0, contentHeight: 0)
-    static func reduce(value: inout ScrollMetrics, nextValue: () -> ScrollMetrics) {
-        value = nextValue()
-    }
 }
 
 /// One tappable chunk of story text (a Telugu word plus any attached punctuation).

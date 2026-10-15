@@ -7,13 +7,21 @@ struct Story: Decodable, Identifiable, Hashable {
     let collection: String
     let text: String
 
+    /// Optional hand-set level in stories.json (`"level": 2`) for a story
+    /// that's harder or easier than its length suggests.
+    let levelOverride: Int?
+
     /// Index within the bundled catalog; assigned by StoryStore after decode.
     var index: Int = 0
+    /// Telugu word count and level, computed once by StoryStore after decode.
+    var wordCount: Int = 0
+    var level: StoryLevel = .stories
 
     var id: Int { index }
 
     private enum CodingKeys: String, CodingKey {
         case title, titleEn, collection, text
+        case levelOverride = "level"
     }
 
     var paragraphs: [String] {
@@ -27,10 +35,55 @@ struct Story: Decodable, Identifiable, Hashable {
         TeluguText.words(in: text)
     }
 
-    var wordCount: Int { words.count }
-
     /// Rough reading time at ~25 Telugu words per minute for a learner.
     var readingMinutes: Int { max(1, Int((Double(wordCount) / 25.0).rounded())) }
+}
+
+/// Reading levels, by length: start with very short stories and graduate to
+/// longer ones. A story's level comes from its word count unless stories.json
+/// overrides it. Shared with the widgets (today's story is picked per level).
+enum StoryLevel: Int, CaseIterable, Identifiable, Comparable {
+    case firstSteps = 1, little, stories, longer
+
+    var id: Int { rawValue }
+
+    static func < (a: StoryLevel, b: StoryLevel) -> Bool { a.rawValue < b.rawValue }
+
+    static func forWordCount(_ count: Int) -> StoryLevel {
+        switch count {
+        case ..<41: .firstSteps
+        case ..<81: .little
+        case ..<151: .stories
+        default: .longer
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .firstSteps: "First steps"
+        case .little: "Little stories"
+        case .stories: "Stories"
+        case .longer: "Longer stories"
+        }
+    }
+
+    var teluguName: String {
+        switch self {
+        case .firstSteps: "మొదటి అడుగు"
+        case .little: "చిన్న కథలు"
+        case .stories: "కథలు"
+        case .longer: "పెద్ద కథలు"
+        }
+    }
+
+    var lengthHint: String {
+        switch self {
+        case .firstSteps: "up to 40 words · about 1 min"
+        case .little: "40–80 words · 2–3 min"
+        case .stories: "80–150 words · 4–6 min"
+        case .longer: "150+ words · 7+ min"
+        }
+    }
 }
 
 /// Telugu-script tokenization shared by the reader and stats.

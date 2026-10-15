@@ -197,6 +197,15 @@ final class AppModel {
 
         applyDictionaryMeanings()
         applyWidgetGrades()
+        // Story level: restore, then raise if progress earned more. didSet
+        // doesn't fire in init, so persist + mirror to the widgets by hand —
+        // before the widget refresh below, which picks today's story by level.
+        if let saved = StoryLevel(rawValue: UserDefaults.standard.integer(forKey: "currentLevel")) {
+            currentLevel = saved
+        }
+        updateLevel()
+        UserDefaults.standard.set(currentLevel.rawValue, forKey: "currentLevel")
+        WidgetShared.defaults?.set(currentLevel.rawValue, forKey: WidgetShared.Key.currentLevel)
         refreshWidgets(force: true)
         readingActivity.endOrphans()
         rescheduleReminders()  // also installs the notification tap delegate
@@ -366,18 +375,28 @@ final class AppModel {
     /// rebuilds `UserData` from the server, which doesn't know this field.
     private static let positionsKey = "readingPositions"
 
+    /// Story index (as a string key) → saved paragraph. Observable so the
+    /// Library's "Continue reading" row updates when the reader closes.
+    private(set) var readingPositions: [String: Int] =
+        UserDefaults.standard.dictionary(forKey: AppModel.positionsKey) as? [String: Int] ?? [:] {
+        didSet { UserDefaults.standard.set(readingPositions, forKey: Self.positionsKey) }
+    }
+
     func readingPosition(storyIdx: Int) -> Int? {
-        let positions = UserDefaults.standard.dictionary(forKey: Self.positionsKey) as? [String: Int]
-        return positions?[String(storyIdx)]
+        readingPositions[String(storyIdx)]
+    }
+
+    /// Stories left partway through, in catalog order.
+    var inProgressStories: [Story] {
+        storyStore.stories.filter { readingPositions[String($0.index)] != nil }
     }
 
     /// Saves the paragraph a story is open at; `nil` (or the first paragraph)
     /// clears it so the story opens from the top next time.
     func saveReadingPosition(_ paragraph: Int?, storyIdx: Int) {
-        var positions = UserDefaults.standard.dictionary(forKey: Self.positionsKey) as? [String: Int] ?? [:]
         let key = String(storyIdx)
-        if let paragraph, paragraph > 0 { positions[key] = paragraph } else { positions[key] = nil }
-        UserDefaults.standard.set(positions, forKey: Self.positionsKey)
+        let value = paragraph.flatMap { $0 > 0 ? $0 : nil }
+        if readingPositions[key] != value { readingPositions[key] = value }
     }
 
     /// Records a finished story: best proficiency and a reading session.
@@ -392,6 +411,64 @@ final class AppModel {
             sync.pushProgress(storyIdx: storyIdx, bestPct: best)
             sync.pushSession(storyIdx: storyIdx, pct: proficiencyPct)
         }
+        updateLevel()
+    }
+
+    // MARK: Story levels
+
+    /// Stories at a level needed to graduate it (fewer if the level has fewer),
+    /// and the best score each must reach.
+    static let graduationStories = 3
+    static let graduationScore = 80
+
+    /// The level today's story and the Library's "Your level" shelf come from.
+    /// Only ever rises (so adding easy stories later doesn't demote anyone);
+    /// stored, and mirrored to the App Group for the widgets.
+    private(set) var currentLevel: StoryLevel = .firstSteps {
+        didSet {
+            UserDefaults.standard.set(currentLevel.rawValue, forKey: "currentLevel")
+            WidgetShared.defaults?.set(currentLevel.rawValue, forKey: WidgetShared.Key.currentLevel)
+            WidgetCenter.shared.reloadAllTimelines()  // today's story may change
+            rescheduleReminders()
+        }
+    }
+
+    /// Set when the reader moves up a level; drives the Library's "you've
+    /// graduated" card until dismissed. Never locks anything — just a nudge.
+    private(set) var graduation: (from: StoryLevel, to: StoryLevel)?
+
+    func isGraduated(_ level: StoryLevel) -> Bool {
+        let stories = storyStore.stories(at: level)
+        guard !stories.isEmpty else { return false }
+        let needed = min(Self.graduationStories, stories.count)
+        let passed = stories.filter { (data.storyProgress[$0.index]?.bestPct ?? 0) >= Self.graduationScore }
+        return passed.count >= needed
+    }
+
+    /// The level after the highest one graduated (skipping levels with no
+    /// stories), or the lowest level that has stories.
+    private var earnedLevel: StoryLevel {
+        let levels = StoryLevel.allCases.filter { !storyStore.stories(at: $0).isEmpty }
+        guard let lowest = levels.first else { return .firstSteps }
+        guard let top = levels.last(where: isGraduated) else { return lowest }
+        return levels.first { $0 > top } ?? top
+    }
+
+    /// Raises `currentLevel` when a level is graduated. On first run it just
+    /// places the reader (existing progress counts) without a celebration.
+    private func updateLevel() {
+        let earned = earnedLevel
+        guard UserDefaults.standard.object(forKey: "currentLevel") != nil else {
+            currentLevel = earned
+            return
+        }
+        guard earned > currentLevel else { return }
+        graduation = (from: currentLevel, to: earned)
+        currentLevel = earned
+    }
+
+    func dismissGraduation() {
+        graduation = nil
     }
 
     // MARK: Widgets & deep links
@@ -775,5 +852,6 @@ final class AppModel {
         data = await sync.activate(userID: userID, local: data)
         persist()
         applyDictionaryMeanings()
+        updateLevel()  // synced progress may graduate a level
     }
 }

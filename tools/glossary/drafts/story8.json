@@ -1,0 +1,18 @@
+{"story": 8, "entries": [
+{"word": "రాజు", "meaning": "king", "pos": "noun", "confidence": "high"},
+{"word": "రామకృష్ణుడికి", "meaning": "to Ramakrishna", "base": "రామకృష్ణుడు", "baseMeaning": "Ramakrishna", "pos": "noun", "note": "-కి = to", "confidence": "high"},
+{"word": "పిల్లిని", "meaning": "the cat", "base": "పిల్లి", "baseMeaning": "cat", "pos": "noun", "note": "-ని marks the object", "confidence": "high"},
+{"word": "దీనికి", "meaning": "to this", "base": "ఇది", "baseMeaning": "this", "pos": "pronoun", "note": "-కి = to; here 'to it' (the cat)", "confidence": "high"},
+{"word": "పాలు", "meaning": "milk", "pos": "noun", "confidence": "high"},
+{"word": "ఇవ్వు", "meaning": "give", "pos": "verb", "note": "Command form", "confidence": "high"},
+{"word": "రామకృష్ణుడు", "meaning": "Ramakrishna", "pos": "noun", "note": "Tenali Ramakrishna, the witty poet of King Krishnadevaraya's court", "confidence": "high"},
+{"word": "పిల్లికి", "meaning": "to the cat", "base": "పిల్లి", "baseMeaning": "cat", "pos": "noun", "note": "-కి = to; in 'పిల్లికి భయం' = the cat is afraid", "confidence": "high"},
+{"word": "వేడి", "meaning": "hot", "pos": "adjective", "note": "Also: heat", "confidence": "high"},
+{"word": "పిల్లి", "meaning": "cat", "pos": "noun", "confidence": "high"},
+{"word": "మూతి", "meaning": "mouth", "pos": "noun", "note": "An animal's snout or muzzle", "confidence": "high"},
+{"word": "కాలింది", "meaning": "got burned", "base": "కాలు", "baseMeaning": "to burn", "pos": "verb", "note": "Past tense", "confidence": "high"},
+{"word": "మరుసటి", "meaning": "next", "pos": "adjective", "note": "'మరుసటి రోజు' = the next day", "confidence": "high"},
+{"word": "తాగలేదు", "meaning": "didn't drink", "base": "తాగు", "baseMeaning": "to drink", "pos": "verb", "confidence": "high"},
+{"word": "పారిపోయింది", "meaning": "ran away", "base": "పారిపోవు", "baseMeaning": "to run away", "pos": "verb", "note": "Past tense", "confidence": "high"},
+{"word": "నవ్వాడు", "meaning": "laughed", "base": "నవ్వు", "baseMeaning": "to laugh", "pos": "verb", "note": "Past tense, he", "confidence": "high"}
+]}

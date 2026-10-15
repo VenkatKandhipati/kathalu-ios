@@ -1,9 +1,14 @@
 import SwiftUI
 
-/// Library home: streak, week strip, today's story hero card, bookshelf.
+/// Library home: streak, week strip, graduation nudge, continue reading,
+/// today's story (from the reader's level), then one bookshelf — shortest
+/// stories first — that the level chips filter.
 struct LibraryView: View {
     @Environment(AppModel.self) private var model
     @State private var selectedStory: Story?
+    /// nil = all levels.
+    @State private var levelFilter: StoryLevel?
+    @State private var unreadOnly = false
 
     var body: some View {
         NavigationStack {
@@ -12,6 +17,16 @@ struct LibraryView: View {
                     header
                     WeekStripView(days: model.weekStrip)
                         .padding(.vertical, 20)
+                    if let graduation = model.graduation {
+                        GraduationCard(from: graduation.from, to: graduation.to) {
+                            withAnimation { model.dismissGraduation() }
+                        }
+                        .padding(.bottom, 18)
+                    }
+                    if !model.inProgressStories.isEmpty {
+                        continueReading
+                            .padding(.bottom, 22)
+                    }
                     if let today = model.storyStore.today {
                         TodayStoryCard(story: today) { selectedStory = today }
                             .padding(.bottom, 26)
@@ -20,12 +35,10 @@ struct LibraryView: View {
                         .font(.system(size: 12, weight: .bold))
                         .tracking(1.7)
                         .foregroundStyle(Theme.textTertiary)
-                        .padding(.bottom, 16)
-                    BookshelfView(
-                        stories: model.storyStore.stories,
-                        progress: model.data.storyProgress,
-                        onSelect: { selectedStory = $0 })
-                        .padding(.horizontal, -22)  // full-bleed shelf; inset restored inside
+                        .padding(.bottom, 12)
+                    filters
+                        .padding(.bottom, 14)
+                    shelf
                 }
                 .padding(.horizontal, 22)
                 .padding(.bottom, 24)
@@ -52,6 +65,127 @@ struct LibraryView: View {
                     model.deepLinkedStoryIndex = nil
                 }
             }
+        }
+    }
+
+    // MARK: Continue reading
+
+    private var continueReading: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CONTINUE READING")
+                .font(.system(size: 12, weight: .bold))
+                .tracking(1.7)
+                .foregroundStyle(Theme.textTertiary)
+            ForEach(model.inProgressStories) { story in
+                Button { selectedStory = story } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "bookmark.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 34, height: 34)
+                            .background(Theme.accent.opacity(0.1), in: Circle())
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(story.title)
+                                .font(Theme.serif(16, weight: .semibold))
+                                .foregroundStyle(Theme.textHeading)
+                                .lineLimit(1)
+                            Text("\(story.titleEn) · \(continueLabel(story))")
+                                .font(Theme.latinSerif(12.5))
+                                .foregroundStyle(Theme.textSecondary)
+                                .lineLimit(1)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(12)
+                    .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.cardBorder))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    /// "40% read" from the saved paragraph.
+    private func continueLabel(_ story: Story) -> String {
+        let total = max(1, story.paragraphs.count)
+        let at = model.readingPosition(storyIdx: story.index) ?? 0
+        return "\(Int((Double(at) / Double(total) * 100).rounded()))% read"
+    }
+
+    // MARK: Filters + shelves
+
+    /// Levels that have at least one story.
+    private var levels: [StoryLevel] {
+        StoryLevel.allCases.filter { !model.storyStore.stories(at: $0).isEmpty }
+    }
+
+    private var filters: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                chip("All", selected: levelFilter == nil) { levelFilter = nil }
+                ForEach(levels) { level in
+                    chip("Level \(level.rawValue)", selected: levelFilter == level,
+                         isYourLevel: level == model.currentLevel) {
+                        levelFilter = levelFilter == level ? nil : level
+                    }
+                }
+                Rectangle().fill(Theme.divider).frame(width: 1, height: 18)
+                chip("Unread", selected: unreadOnly) { unreadOnly.toggle() }
+            }
+        }
+        .scrollClipDisabled()
+    }
+
+    /// `isYourLevel` adds a small accent dot — the only "your level" marker.
+    private func chip(_ title: String, selected: Bool, isYourLevel: Bool = false,
+                      action: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.snappy) { action() }
+        } label: {
+            HStack(spacing: 6) {
+                if isYourLevel {
+                    Circle()
+                        .fill(selected ? .white : Theme.accent)
+                        .frame(width: 6, height: 6)
+                }
+                Text(title)
+            }
+                .font(Theme.sans(13.5, weight: .medium))
+                .foregroundStyle(selected ? .white : Theme.textSecondary)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 7)
+                .background(selected ? Theme.accent : Theme.card, in: Capsule())
+                .overlay(Capsule().strokeBorder(selected ? Theme.accent : Theme.cardBorder))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Shortest first (level, then length), narrowed by the chips.
+    private var shelfStories: [Story] {
+        model.storyStore.stories
+            .filter { levelFilter == nil || $0.level == levelFilter }
+            .filter { !unreadOnly || model.data.storyProgress[$0.index] == nil }
+            .sorted { ($0.level.rawValue, $0.wordCount) < ($1.level.rawValue, $1.wordCount) }
+    }
+
+    @ViewBuilder
+    private var shelf: some View {
+        let stories = shelfStories
+        if stories.isEmpty {
+            Text(unreadOnly ? "You've read every story here." : "No stories here yet.")
+                .font(Theme.sans(14))
+                .foregroundStyle(Theme.textTertiary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+        } else {
+            BookshelfView(
+                stories: stories,
+                progress: model.data.storyProgress,
+                onSelect: { selectedStory = $0 })
+                .padding(.horizontal, -22)  // full-bleed shelf; inset restored inside
         }
     }
 
@@ -160,7 +294,7 @@ struct TodayStoryCard: View {
                     .foregroundStyle(.white.opacity(0.85))
                     .padding(.top, 3)
                 HStack(alignment: .bottom) {
-                    Text("\(story.collection) · \(story.wordCount) పదాలు · \(story.readingMinutes) min")
+                    Text("Level \(story.level.rawValue) · \(story.wordCount) పదాలు · \(story.readingMinutes) min")
                         .font(Theme.sans(12.5))
                         .foregroundStyle(.white.opacity(0.8))
                     Spacer()
@@ -188,6 +322,41 @@ struct TodayStoryCard: View {
             .shadow(color: Theme.accent.opacity(0.5), radius: 17, y: 9)
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// "You've graduated" nudge after moving up a level. Nothing is locked —
+/// it just points at the next shelf.
+struct GraduationCard: View {
+    let from: StoryLevel
+    let to: StoryLevel
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("🎓")
+                .font(.system(size: 28))
+            VStack(alignment: .leading, spacing: 4) {
+                Text("You've graduated from Level \(from.rawValue)!")
+                    .font(Theme.latinSerif(16, weight: .semibold))
+                    .foregroundStyle(Theme.textHeading)
+                Text("You're ready for Level \(to.rawValue) · \(to.name) (\(to.lengthHint)). Today's story now comes from there.")
+                    .font(Theme.sans(13.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(14)
+        .background(Theme.gold.opacity(0.18), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.gold.opacity(0.5)))
     }
 }
 
