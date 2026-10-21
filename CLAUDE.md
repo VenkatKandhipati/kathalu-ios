@@ -5,6 +5,9 @@ stories, tap-to-learn words, SM-2 flashcards, script lessons). See `README.md` f
 feature/structure overview and **`ROADMAP.md` for what to build next** — work here is
 roadmap-driven, and shipped features get marked ✅ Done there with short as-built notes.
 
+## Workflow
+For work tracked as a GitHub Issue, use the workflow skills in ../hq/skills: `/intake` to start an issue, `/ship` to open the PR, `/after-merge` after the owner merges, `/file-idea` for new ideas, and `/preview` to test locally. Never push to main or merge your own PR.
+
 ## Build & verify
 
 `xcode-select` points at CommandLineTools, so `xcodebuild` needs a `DEVELOPER_DIR` prefix:
