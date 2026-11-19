@@ -1,0 +1,12 @@
+{"story": 10, "entries": [
+{"word": "పేరు", "meaning": "name", "pos": "noun", "confidence": "high"},
+{"word": "చిన్ని", "meaning": "Chinni", "pos": "noun", "note": "A pet name meaning little one", "confidence": "high"},
+{"word": "చిన్నికి", "meaning": "Chinni", "base": "చిన్ని", "baseMeaning": "Chinni", "pos": "noun", "note": "-కి = to; చిన్నికి ఇష్టం = Chinni likes", "confidence": "high"},
+{"word": "అమ్మ", "meaning": "mother", "pos": "noun", "confidence": "high"},
+{"word": "పోస్తుంది", "meaning": "pours", "base": "పోయు", "baseMeaning": "to pour", "pos": "verb", "confidence": "high"},
+{"word": "ఎండలో", "meaning": "in the sun", "base": "ఎండ", "baseMeaning": "sunshine", "pos": "noun", "note": "-లో = in", "confidence": "high"},
+{"word": "పడుకుంటుంది", "meaning": "lies down", "base": "పడుకొను", "baseMeaning": "to lie down", "pos": "verb", "note": "Also: sleeps", "confidence": "high"},
+{"word": "రాత్రి", "meaning": "at night", "pos": "noun", "note": "Also: night", "confidence": "high"},
+{"word": "ఎలుకల", "meaning": "of mice", "base": "ఎలుక", "baseMeaning": "mouse", "pos": "noun", "note": "ఎలుకల కోసం = for mice", "confidence": "high"},
+{"word": "తిరుగుతుంది", "meaning": "wanders around", "base": "తిరుగు", "baseMeaning": "to wander", "pos": "verb", "confidence": "high"}
+]}
