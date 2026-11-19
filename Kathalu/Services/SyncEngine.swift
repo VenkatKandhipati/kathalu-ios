@@ -1,15 +1,22 @@
 import Foundation
+import Observation
 
 /// Write-through cloud sync, mirroring js/sync.js:
 /// 1. First sign-in on this device: bulk-import any local data, then hydrate from cloud.
 /// 2. After that, individual mutations are pushed in the background.
 /// 3. Signed-out users are untouched — everything stays local.
+///
+/// Main-actor and observable so `status` is only ever mutated on the main
+/// actor and the Profile sync pill updates live (the network calls themselves
+/// still suspend off the main thread).
+@MainActor
+@Observable
 final class SyncEngine {
     enum Status: Equatable {
         case idle, syncing, synced, offline
     }
 
-    private let api: APIClient
+    @ObservationIgnored private let api: APIClient
     private(set) var status: Status = .idle
 
     init(api: APIClient) {

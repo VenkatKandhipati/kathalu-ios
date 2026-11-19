@@ -516,6 +516,16 @@ struct BookSpineView: View {
             topLeadingRadius: 4, bottomLeadingRadius: 4,
             bottomTrailingRadius: 7, topTrailingRadius: 7))
         .shadow(color: .black.opacity(0.24), radius: 5, x: 2, y: 4)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(story.titleEn)
+        .accessibilityValue(spineAccessibilityValue)
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private var spineAccessibilityValue: String {
+        var parts = ["Level \(story.level.rawValue)", "\(story.wordCount) words"]
+        if let bestPct { parts.append("best score \(bestPct) percent") }
+        return parts.joined(separator: ", ")
     }
 
     @ViewBuilder

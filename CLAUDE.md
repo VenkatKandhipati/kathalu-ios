@@ -35,7 +35,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   `Exceptions for "Kathalu" folder in "KathaluWidgetsExtension"` set's
   `membershipExceptions` (that's what Xcode's Target Membership checkbox writes).
 - Building the `Kathalu` scheme also builds the embedded `KathaluWidgetsExtension`.
-- There is no test target.
+- There is no Xcode test target. Pure-logic checks live in `tools/tests/` — run
+  `tools/tests/run.sh` (compiles `Syllables`/`Akshara`/`VocabCard` with `swiftc`). Run it
+  after touching `Models/Syllables.swift`; keep those model files Foundation-only.
 
 ### DEBUG launch hooks (simctl launch args)
 
@@ -73,6 +75,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   (`tools/glossary/new_forms.py <idx>`).
 - `SpeechService` is the only TTS path; it applies the user's voice/rate per utterance.
   Prefer speaking whole words over bare syllables — the voice handles context better.
+- **Syllables** (`Models/Syllables.swift`): words split into aksharas at each consonant or
+  independent vowel not preceded by a virama. The word sheet's syllable tiles use it to
+  sound a word out piece by piece (the one place bare syllables are spoken on purpose).
 
 ## Widgets & Live Activity
 
@@ -119,8 +124,8 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 
 ## Known landmines (details in ROADMAP.md Part 2)
 
-- `SyncEngine` is not `@Observable` — the Profile sync pill doesn't live-update.
-- `ReaderView.pages` re-paginates on every render (cheap at current story sizes).
+- Story indexes are identity (progress, resume positions and glossary drafts key on them):
+  only ever **append** stories to stories.json.
 - Reader token ids are story-wide `paragraph-offset` — keep them independent of
   pagination. Story completion needs the end reached *and* `minimumReadSeconds`.
 - Stories have a **level** (`StoryLevel`, 1–4 by word count; `"level"` in stories.json

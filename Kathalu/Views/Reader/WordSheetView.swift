@@ -19,11 +19,42 @@ struct WordSheetView: View {
     /// and note lines when the entry has them.
     static func height(for word: String) -> CGFloat {
         let entry = DictionaryService.entry(for: word)
-        return 400 + (entry?.base != nil ? 26 : 0) + (entry?.note != nil ? 62 : 0)
+        return 466 + (entry?.base != nil ? 26 : 0) + (entry?.note != nil ? 62 : 0)
     }
 
     private var inDeck: Bool {
         added || model.data.cards[word] != nil
+    }
+
+    /// The word in syllables, each tile tappable to hear it — sound the word
+    /// out piece by piece.
+    private var syllableTiles: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(Array(Syllables.split(word).enumerated()), id: \.offset) { _, syllable in
+                    Button {
+                        model.speech.speak(Self.spoken(syllable))
+                    } label: {
+                        Text(syllable)
+                            .font(Theme.serif(24, weight: .semibold))
+                            .foregroundStyle(Theme.textHeading)
+                            .frame(minWidth: 46, minHeight: 46)
+                            .padding(.horizontal, 6)
+                            .background(Theme.accent.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.cardBorder))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(syllable)
+                    .accessibilityHint("Hear this syllable")
+                }
+            }
+        }
+    }
+
+    /// Single letters the voice mispronounces carry a TTS override.
+    static func spoken(_ syllable: String) -> String {
+        let all = AksharaData.vowels.aksharas + AksharaData.consonants
+        return all.first { $0.letter == syllable }?.spokenText ?? syllable
     }
 
     var body: some View {
@@ -51,6 +82,9 @@ struct WordSheetView: View {
                 }
             }
             .padding(.top, 24)
+
+            syllableTiles
+                .padding(.top, 16)
 
             Divider()
                 .overlay(Theme.divider)

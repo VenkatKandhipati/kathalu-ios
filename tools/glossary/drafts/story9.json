@@ -1,0 +1,14 @@
+{"story": 9, "entries": [
+{"word": "దాహం", "meaning": "thirst", "pos": "noun", "note": "దాహం వేసింది = felt thirsty", "confidence": "high"},
+{"word": "వేసింది", "meaning": "put", "base": "వేయు", "baseMeaning": "to put", "pos": "verb", "note": "దాహం వేసింది = it felt thirsty; కుండలో వేసింది = dropped into the pot", "confidence": "high"},
+{"word": "నీళ్ళ", "meaning": "of water", "base": "నీళ్ళు", "baseMeaning": "water", "pos": "noun", "note": "నీళ్ళ కోసం = for water", "confidence": "high"},
+{"word": "వెతికింది", "meaning": "searched", "base": "వెతుకు", "baseMeaning": "to search", "pos": "verb", "confidence": "high"},
+{"word": "కుండ", "meaning": "pot", "pos": "noun", "note": "A clay water pot", "confidence": "high"},
+{"word": "కనిపించింది", "meaning": "appeared", "base": "కనిపించు", "baseMeaning": "to be seen", "pos": "verb", "note": "Here: it spotted a pot", "confidence": "high"},
+{"word": "కుండలో", "meaning": "in the pot", "base": "కుండ", "baseMeaning": "pot", "pos": "noun", "note": "-లో = in", "confidence": "high"},
+{"word": "నీళ్ళు", "meaning": "water", "pos": "noun", "note": "Always plural in Telugu", "confidence": "high"},
+{"word": "కొంచెమే", "meaning": "only a little", "base": "కొంచెం", "baseMeaning": "a little", "pos": "adverb", "note": "-ఏ = only", "confidence": "high"},
+{"word": "రాళ్ళు", "meaning": "stones", "base": "రాయి", "baseMeaning": "stone", "pos": "noun", "confidence": "high"},
+{"word": "వచ్చాయి", "meaning": "came", "base": "వచ్చు", "baseMeaning": "to come", "pos": "verb", "note": "Plural: they came. పైకి వచ్చాయి = rose up", "confidence": "high"},
+{"word": "తాగి", "meaning": "after drinking", "base": "తాగు", "baseMeaning": "to drink", "pos": "verb", "note": "Having drunk", "confidence": "high"}
+]}

@@ -40,9 +40,11 @@ struct ReaderView: View {
     @State private var timerSegmentStart: Date?
     /// How much of `timerElapsed` has already been added to today's total.
     @State private var reportedSeconds: TimeInterval = 0
+    @State private var pageCache = PageCache()
 
+    /// Paginated once per font size (it used to re-tokenize on every render).
     private var pages: [ReaderPage] {
-        ReaderPage.paginate(story: story, fontSize: model.fontSize.points)
+        pageCache.pages(story: story, fontSize: model.fontSize.points)
     }
 
     var body: some View {
@@ -412,6 +414,9 @@ struct ReaderView: View {
                     state: tokenState(token),
                     inDeck: token.teluguWord.map { model.data.cards[$0] != nil } ?? false)
                 .onTapGesture { tap(token) }
+                .accessibilityAction(named: "Meaning") {
+                    if let word = token.teluguWord { sheetWord = WordSheetItem(word: word) }
+                }
             }
         }
     }
@@ -615,6 +620,24 @@ struct WordTokenView: View {
                 }
             }
             .contentShape(Rectangle())
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(token.teluguWord ?? token.display)
+            .accessibilityValue(accessibilityValue)
+            .accessibilityHint(token.teluguWord == nil ? "" : accessibilityHint)
+            .accessibilityAddTraits(token.teluguWord == nil ? [] : .isButton)
+    }
+
+    /// The romanization, once the word has been tapped and it's on screen.
+    private var accessibilityValue: String {
+        guard state == .phonetic, let telugu = token.teluguWord else { return "" }
+        return Transliterator.transliterate(telugu)
+    }
+
+    private var accessibilityHint: String {
+        switch state {
+        case .hidden: return "Tap to hear it."
+        case .phonetic: return "Tap for its meaning."
+        }
     }
 }
 
@@ -761,4 +784,18 @@ struct FlowLayout: Layout {
     let model = AppModel()
     return ReaderView(story: model.storyStore.stories[0])
         .environment(model)
+}
+
+/// Pages for the paged reader, recomputed only when the font size changes.
+final class PageCache {
+    private var fontSize: CGFloat?
+    private var cached: [ReaderPage] = []
+
+    func pages(story: Story, fontSize: CGFloat) -> [ReaderPage] {
+        if self.fontSize != fontSize {
+            cached = ReaderPage.paginate(story: story, fontSize: fontSize)
+            self.fontSize = fontSize
+        }
+        return cached
+    }
 }
