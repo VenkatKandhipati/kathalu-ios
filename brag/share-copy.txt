@@ -1,0 +1,3 @@
+I can say పాలు, పిల్లి and నీళ్ళు. I couldn't read any of them. Kathalu is the iPhone app I'm building to fix that: one letter at a time, tap a word to sound it out, then a whole 25-word story.
+
+Music: Sascha Ende, ende.app (CC BY 4.0)
