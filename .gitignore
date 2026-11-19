@@ -7,3 +7,12 @@ xcuserdata/
 
 # macOS
 .DS_Store
+
+# The brag video's Hyperframes caches and stray renders (brag/composition is source; brag/brag.mp4 is kept).
+brag/composition/.hyperframes/
+brag/composition/.thumbnails/
+brag/composition/.waveform-cache/
+brag/composition/renders/
+brag/composition/node_modules/
+# Scratch output from /brag runs that weren't kept.
+brag-output*/

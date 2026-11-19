@@ -16,6 +16,8 @@ reading practice with tap-to-learn words and SM-2 spaced repetition.
 Works fully offline and anonymously; signing in imports local data once and then syncs
 write-through to the FastAPI backend at `api.kathalu.me`, mirroring the web app's model.
 
+A short launch video, and the composition that renders it: [brag/](brag/README.md).
+
 ## Structure
 
 ```
